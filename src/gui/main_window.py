@@ -3,6 +3,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 
 from gui.widgets.file_picker import FilePicker
+from gui.widgets.encoding_panel import EncodingPanel
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -270,6 +271,8 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.file_types_label)
 
         # Encoding Panel Algo Options
+        self.encoding_panel = EncodingPanel()
+        layout.addWidget(self.encoding_panel)
 
         layout.addStretch()
 
@@ -313,6 +316,7 @@ class MainWindow(QMainWindow):
             self.file_types_label.setVisible(False)
 
         # Update encoding panel
+        self.encoding_panel
 
         # Update file picker visibility
 
