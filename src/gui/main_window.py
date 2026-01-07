@@ -1,11 +1,18 @@
 from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QFrame, QStackedWidget, QSplitter, QSizePolicy
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QPixmap
+
+from gui.widgets.file_picker import FilePicker
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Steganography Pal")
         self.setMinimumSize(1200, 700)
+
+        # Store original pixmaps for resizing
+        self._input_pixmap = None
+        self._output_pixmap = None
 
         # Section Definitions
         self.sections = {
@@ -254,8 +261,13 @@ class MainWindow(QMainWindow):
         layout.setSpacing(15)
 
         # File Picker
+        self.file_picker = FilePicker()
+        layout.addWidget(self.file_picker)
 
         # Allowed File Types
+        self.file_types_label = QLabel()
+        self.file_types_label.setStyleSheet("font-size: 12px; color: #888888;")
+        layout.addWidget(self.file_types_label)
 
         # Encoding Panel Algo Options
 
@@ -282,10 +294,23 @@ class MainWindow(QMainWindow):
         self.section_description.setText(section["description"])
 
         # Show hide preview frames
+        self.preview_container.setVisible(section["has_preview"])
 
         # Update output label for preview windows
+        if section["has_preview"]:
+            if section["is_encoding"]:
+                self.output_label.setText("Encoded Output")
+                self.output_image.setText("No output yet")
+            else:
+                self.output_label.setText("Decoded Data")
+                self.output_image.setText("No decoded data yet")
 
         # Update file types window
+        if section["file_types"]:
+            self.file_types_label.setText(f"Allowed types: {section['file_types']}")
+            self.file_types_label.setVisible(True)
+        else:
+            self.file_types_label.setVisible(False)
 
         # Update encoding panel
 
@@ -299,3 +324,39 @@ class MainWindow(QMainWindow):
 
         # Hide action button when appropriate
         self.action_button.setVisible(section_id not in ["settings", "about", "steganalysis"])
+
+        # Listen for file picker
+        if self.current_section == "image_encode":
+            self.file_picker.file_selected.connect(self._load_input_image)
+
+    def _load_input_image(self, file_path):
+        # Load image into input preview
+        pixmap = QPixmap(file_path)
+        if not pixmap.isNull():
+            self._input_pixmap = pixmap
+            self._update_image_display()
+        else:
+            self.input_image.setText("Failed to load image")
+
+    def _update_image_display(self):
+        # Update the displayed image to fit current size
+        if self._input_pixmap and not self._input_pixmap.isNull():
+            scaled_pixmap = self._input_pixmap.scaled(
+                self.input_image.size(),
+                Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.SmoothTransformation
+            )
+            self.input_image.setPixmap(scaled_pixmap)
+
+        if self._output_pixmap and not self._output_pixmap.isNull():
+            scaled_pixmap = self._output_pixmap.scaled(
+                self.output_image.size(),
+                Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.SmoothTransformation
+            )
+            self.output_image.setPixmap(scaled_pixmap)
+
+    def resizeEvent(self, event):
+        # Handle window resize events
+        super().resizeEvent(event)
+        self._update_image_display()
