@@ -72,9 +72,28 @@ class EncodingPanel(QWidget):
         options_layout = QVBoxLayout(self.options_group)
         options_layout.setSpacing(10)
 
+        # RGB Checkboxes
+
+        # Offset spinner
+
+        layout.addWidget(self.options_group)
+        self.options_group.setVisible(False)
+        
+        # Connect signals
+
 
     def set_algorithms(self, algorithms):
-        return 0
+        # Sets available algorithms in selector
+        self._algorithms = algorithms
+        self.algo_combo.clear()
+
+        if algorithms:
+            self.algo_combo.addItems(algorithms)
+            self.algo_combo.setVisible(True)
+            self.options_group.setVisible(True)
+        else:
+            self.algo_combo.setVisible(False)
+            self.options_group.setVisible(False)
     
     def _on_algorithm_changed(self, algorithms):
         return 0

@@ -280,6 +280,7 @@ class MainWindow(QMainWindow):
         self.action_button = QPushButton("Encode")
         self.action_button.setEnabled = False
         layout.addWidget(self.action_button)
+        self.action_button.clicked.connect(self._on_action_button_clicked)
 
         return options_widget
     
@@ -316,7 +317,8 @@ class MainWindow(QMainWindow):
             self.file_types_label.setVisible(False)
 
         # Update encoding panel
-        self.encoding_panel
+        self.encoding_panel.set_algorithms(section["algorithms"])
+        self.encoding_panel.setVisible(bool(section["algorithms"]))
 
         # Update file picker visibility
 
@@ -364,3 +366,6 @@ class MainWindow(QMainWindow):
         # Handle window resize events
         super().resizeEvent(event)
         self._update_image_display()
+
+    def _on_action_button_clicked(self):
+        print(f"Action button clicked in section: {self.current_section}")
