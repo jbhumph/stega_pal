@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QFrame, QStackedWidget, QSplitter, QSizePolicy
+from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QFrame, QStackedWidget, QSplitter, QSizePolicy, QTextEdit
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 
@@ -236,15 +236,32 @@ class MainWindow(QMainWindow):
         self.output_label = QLabel("Output Preview")
         self.output_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.output_label.setStyleSheet("border: none; color: #888888;")
+
+        # Stacked widget to switch between image and text display
+        self.output_stack = QStackedWidget()
+        self.output_stack.setStyleSheet("border: none;")
+
+        # Image display (index 0)
         self.output_image = QLabel()
         self.output_image.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.output_image.setStyleSheet("border: none;")
         self.output_image.setText("No output yet")
-        output_layout.addWidget(self.output_label)
-        output_layout.addWidget(self.output_image, 1)
+        self.output_stack.addWidget(self.output_image)
 
-        preview_layout.addWidget(self.input_frame)
-        preview_layout.addWidget(self.output_frame)
+        # Text display (index 1)
+        self.output_text = QTextEdit()
+        self.output_text.setReadOnly(True)
+        self.output_text.setStyleSheet("background-color: transparent; color: #e0e0e0; border: none;")
+        self.output_stack.addWidget(self.output_text)
+
+        output_layout.addWidget(self.output_label)
+        output_layout.addWidget(self.output_stack, 1)
+
+        # Make both frames equal width
+        self.input_frame.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.output_frame.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+
+        preview_layout.addWidget(self.input_frame, 1)
+        preview_layout.addWidget(self.output_frame, 1)
 
         layout.addWidget(self.preview_container)
         layout.addStretch()
@@ -269,6 +286,15 @@ class MainWindow(QMainWindow):
         self.file_types_label = QLabel()
         self.file_types_label.setStyleSheet("font-size: 12px; color: #888888;")
         layout.addWidget(self.file_types_label)
+
+        # Payload Picker
+        self.payload_picker = FilePicker("Select Payload")
+        layout.addWidget(self.payload_picker)
+
+        # Payload File Types
+        self.payload_types_label = QLabel("Allowed types: All Files")
+        self.payload_types_label.setStyleSheet("font-size: 12px; color: #888888;")
+        layout.addWidget(self.payload_types_label)
 
         # Encoding Panel Algo Options
         self.encoding_panel = EncodingPanel()
@@ -335,6 +361,8 @@ class MainWindow(QMainWindow):
         if self.current_section == "image_encode":
             self.file_picker.file_selected.connect(self._load_input_image)
 
+        self.payload_picker.file_selected.connect(self._load_payload_file)
+
     def _load_input_image(self, file_path):
         # Load image into input preview
         pixmap = QPixmap(file_path)
@@ -343,6 +371,17 @@ class MainWindow(QMainWindow):
             self._update_image_display()
         else:
             self.input_image.setText("Failed to load image")
+
+    def _load_payload_file(self, file_path):
+        # Load payload file (for encoding)
+        # display txt file content in output preview for now
+        try:
+            with open(file_path, 'r') as f:
+                content = f.read()
+            self.output_text.setText(content)
+            self.output_stack.setCurrentIndex(1)  # Switch to text view
+        except Exception as e:
+            self.output_image.setText("Failed to load payload")
 
     def _update_image_display(self):
         # Update the displayed image to fit current size
@@ -368,4 +407,6 @@ class MainWindow(QMainWindow):
         self._update_image_display()
 
     def _on_action_button_clicked(self):
-        print(f"Action button clicked in section: {self.current_section}")
+        path = self.file_picker.get_file_path()
+        # save payload to variable
+        # load algo settings

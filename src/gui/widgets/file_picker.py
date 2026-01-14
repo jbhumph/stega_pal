@@ -8,18 +8,18 @@ class FilePicker(QWidget):
 
     file_selected = Signal(str)
 
-    def __init__(self, parent=None):
+    def __init__(self, label="Select File", parent=None):
         super().__init__(parent)
         self._file_path = ""
-        self._setup_ui()
+        self._setup_ui(label)
 
-    def _setup_ui(self):
+    def _setup_ui(self, label):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(8)
 
         # Label
-        label = QLabel("Select File")
+        label = QLabel(label)
         label.setStyleSheet("font-weight: bold; font-size: 13px;")
         layout.addWidget(label)
 
