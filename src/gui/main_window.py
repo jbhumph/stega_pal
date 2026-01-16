@@ -4,6 +4,7 @@ from PySide6.QtGui import QPixmap
 
 from gui.widgets.file_picker import FilePicker
 from gui.widgets.encoding_panel import EncodingPanel
+from core.settings import Settings
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -314,6 +315,12 @@ class MainWindow(QMainWindow):
         # Changes scenes between different options
         self.current_section = section_id
         section = self.sections[section_id]
+        self.type = ""
+        if section["is_encoding"]:
+            self.type = "encode"
+        else:
+            self.type = "decode"
+        self.settings = Settings(self.type, section_id)
 
         # Update navigation buttons
         for btn, sid in self.nav_button_group:
@@ -407,6 +414,6 @@ class MainWindow(QMainWindow):
         self._update_image_display()
 
     def _on_action_button_clicked(self):
-        path = self.file_picker.get_file_path()
-        # save payload to variable
-        # load algo settings
+        f_path = self.file_picker.get_file_path()
+        p_path = self.payload_picker.get_file_path()
+        settings = self.settings.settings
