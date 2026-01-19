@@ -5,6 +5,7 @@ from PySide6.QtGui import QPixmap
 from gui.widgets.file_picker import FilePicker
 from gui.widgets.encoding_panel import EncodingPanel
 from core.settings import Settings
+from core.encoders import get_encoder
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -20,6 +21,7 @@ class MainWindow(QMainWindow):
         self.sections = {
             "image_encode": {
                 "title": "Image Encoding",
+                "class": "image",
                 "description": "Hide data within image files using various steganography techniques. "
                                "The embedded data becomes invisible to the human eye while remaining "
                                "extractable with the correct decoding parameters.",
@@ -30,6 +32,7 @@ class MainWindow(QMainWindow):
             },
             "audio_encode": {
                 "title": "Audio Encoding",
+                "class": "audio",
                 "description": "Embed secret data within audio files. Audio steganography exploits "
                                "the limitations of human hearing to hide information in sound files "
                                "without perceptible quality loss.",
@@ -40,6 +43,7 @@ class MainWindow(QMainWindow):
             },
             "video_encode": {
                 "title": "Video Encoding",
+                "class": "video",
                 "description": "Conceal data within video files by utilizing both spatial and temporal "
                                "redundancy. Video steganography offers high capacity due to the large "
                                "amount of data in video frames.",
@@ -50,6 +54,7 @@ class MainWindow(QMainWindow):
             },
             "batch_encode": {
                 "title": "Batch Encoding",
+                "class": "batch",
                 "description": "Encode data across multiple files simultaneously. This feature allows "
                                "you to split larger payloads across several carrier files for increased "
                                "capacity and security.",
@@ -60,6 +65,7 @@ class MainWindow(QMainWindow):
             },
             "image_decode": {
                 "title": "Image Decoding",
+                "class": "image",
                 "description": "Extract hidden data from steganographic images. Use the same parameters "
                                "that were used during encoding to successfully retrieve the concealed "
                                "information.",
@@ -70,6 +76,7 @@ class MainWindow(QMainWindow):
             },
             "audio_decode": {
                 "title": "Audio Decoding",
+                "class": "audio",
                 "description": "Retrieve hidden data from audio files that contain steganographic content. "
                                "The decoding process reverses the encoding algorithm to extract the "
                                "original payload.",
@@ -80,6 +87,7 @@ class MainWindow(QMainWindow):
             },
             "video_decode": {
                 "title": "Video Decoding",
+                "class": "video",
                 "description": "Extract concealed data from video files. Video decoding analyzes frames "
                                "to retrieve the hidden information embedded during the encoding process.",
                 "has_preview": False,
@@ -89,6 +97,7 @@ class MainWindow(QMainWindow):
             },
             "batch_decode": {
                 "title": "Batch Decoding",
+                "class": "batch",
                 "description": "Decode data that was split across multiple carrier files. This process "
                                "reassembles the original payload from its distributed steganographic "
                                "containers.",
@@ -99,6 +108,7 @@ class MainWindow(QMainWindow):
             },
             "steganalysis": {
                 "title": "Steganalysis",
+                "class": "analysis",
                 "description": "Analyze files for the presence of hidden data. Steganalysis tools help "
                                "detect steganographic content and evaluate the statistical properties "
                                "of potentially modified files.",
@@ -109,6 +119,7 @@ class MainWindow(QMainWindow):
             },
             "settings": {
                 "title": "Settings",
+                "class": "settings",
                 "description": "Configure application preferences, default parameters, and behavior. "
                                "Customize the steganography tools to match your workflow and requirements.",
                 "has_preview": False,
@@ -118,6 +129,7 @@ class MainWindow(QMainWindow):
             },
             "about": {
                 "title": "About",
+                "class": "about",
                 "description": "Steganography App v0.1.0\n\n"
                                "A comprehensive GUI application for hiding and extracting data using "
                                "various steganography techniques across multiple media types including "
@@ -314,9 +326,9 @@ class MainWindow(QMainWindow):
     def _switch_section(self, section_id):
         # Changes scenes between different options
         self.current_section = section_id
-        section = self.sections[section_id]
+        self.section = self.sections[section_id]
         self.type = ""
-        if section["is_encoding"]:
+        if self.section["is_encoding"]:
             self.type = "encode"
         else:
             self.type = "decode"
@@ -327,15 +339,14 @@ class MainWindow(QMainWindow):
             btn.setChecked(sid == section_id)
 
         # Update title and description
-        self.section_title.setText(section["title"])
-        self.section_description.setText(section["description"])
+        self.section_title.setText(self.section["title"])
+        self.section_description.setText(self.section["description"])
 
         # Show hide preview frames
-        self.preview_container.setVisible(section["has_preview"])
-
+        self.preview_container.setVisible(self.section["has_preview"])
         # Update output label for preview windows
-        if section["has_preview"]:
-            if section["is_encoding"]:
+        if self.section["has_preview"]:
+            if self.section["is_encoding"]:
                 self.output_label.setText("Encoded Output")
                 self.output_image.setText("No output yet")
             else:
@@ -343,20 +354,20 @@ class MainWindow(QMainWindow):
                 self.output_image.setText("No decoded data yet")
 
         # Update file types window
-        if section["file_types"]:
-            self.file_types_label.setText(f"Allowed types: {section['file_types']}")
+        if self.section["file_types"]:
+            self.file_types_label.setText(f"Allowed types: {self.section['file_types']}")
             self.file_types_label.setVisible(True)
         else:
             self.file_types_label.setVisible(False)
 
         # Update encoding panel
-        self.encoding_panel.set_algorithms(section["algorithms"])
-        self.encoding_panel.setVisible(bool(section["algorithms"]))
+        self.encoding_panel.set_algorithms(self.section["algorithms"])
+        self.encoding_panel.setVisible(bool(self.section["algorithms"]))
 
         # Update file picker visibility
 
         # Update action button
-        if section["is_encoding"]:
+        if self.section["is_encoding"]:
             self.action_button.setText("Encode")
         else:
             self.action_button.setText("Decode")
@@ -417,3 +428,9 @@ class MainWindow(QMainWindow):
         f_path = self.file_picker.get_file_path()
         p_path = self.payload_picker.get_file_path()
         settings = self.settings.settings
+
+        print(self.encoding_panel.get_selected_algorithm())
+
+        encoder = get_encoder(self.section["class"], self.encoding_panel.get_selected_algorithm())
+        #result = encoder.encode(f_path, b"Test Payload", settings)
+        encoder.test() # Delete this and get the above working tomorrow

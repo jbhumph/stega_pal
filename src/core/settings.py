@@ -23,12 +23,12 @@ class Settings():
                     "randomize_positions": False
                 }
         elif o_type == "decode":
-            # Decoding defaults can be set here if needed
+            # Decoding definitions
             pass
 
     def update_setting(self, key, value):
         if key in self.settings:
             self.settings[key] = value
 
-    def get_setting(self, key):
+    def get_settings(self, key):
         return self.settings.get(key, None)

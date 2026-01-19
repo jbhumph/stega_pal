@@ -13,6 +13,7 @@ class EncodingPanel(QWidget):
         super().__init__(parent)
         self._algorithms = []
         self._setup_ui()
+        self.selected_algorithm = None
 
     def _setup_ui(self):
         layout = QVBoxLayout(self)
@@ -89,6 +90,7 @@ class EncodingPanel(QWidget):
 
         if algorithms:
             self.algo_combo.addItems(algorithms)
+            self.selected_algorithm = algorithms[0]  # Set default to first algorithm
             self.algo_combo.setVisible(True)
             self.options_group.setVisible(True)
         else:
@@ -96,4 +98,7 @@ class EncodingPanel(QWidget):
             self.options_group.setVisible(False)
     
     def _on_algorithm_changed(self, algorithms):
-        return 0
+        self.selected_algorithm = algorithms
+
+    def get_selected_algorithm(self):
+        return self.selected_algorithm
