@@ -425,12 +425,17 @@ class MainWindow(QMainWindow):
         self._update_image_display()
 
     def _on_action_button_clicked(self):
+        # Handle encode/decode action when button clicked
         f_path = self.file_picker.get_file_path()
         p_path = self.payload_picker.get_file_path()
         settings = self.settings.settings
 
-        print(self.encoding_panel.get_selected_algorithm())
+        # Load payload data
+        with open(p_path, 'r') as f:
+            payload = f.read()
 
+        # Encrypt if enabled
+
+        # Select and run encoder/decoder
         encoder = get_encoder(self.section["class"], self.encoding_panel.get_selected_algorithm())
-        #result = encoder.encode(f_path, b"Test Payload", settings)
-        encoder.test() # Delete this and get the above working tomorrow
+        result = encoder.encode(f_path, payload, settings)
