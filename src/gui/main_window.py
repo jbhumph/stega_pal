@@ -428,7 +428,8 @@ class MainWindow(QMainWindow):
         # Handle encode/decode action when button clicked
         f_path = self.file_picker.get_file_path()
         p_path = self.payload_picker.get_file_path()
-        settings = self.settings.settings
+        o_path = f_path.replace(".png", "_steg.png")
+        settings = self.settings
 
         # Load payload data
         with open(p_path, 'r') as f:
@@ -438,4 +439,4 @@ class MainWindow(QMainWindow):
 
         # Select and run encoder/decoder
         encoder = get_encoder(self.section["class"], self.encoding_panel.get_selected_algorithm())
-        result = encoder.encode(f_path, payload, settings)
+        result = encoder.encode(f_path, payload, settings, o_path)

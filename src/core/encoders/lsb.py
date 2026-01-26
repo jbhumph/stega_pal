@@ -1,7 +1,7 @@
 from PIL import Image
 
 class LSBEncoder:
-    def encode(self, file_path, payload, settings):
+    def encode(self, file_path, payload, settings, output_path) -> None:
         # Implementation of LSB encoding
         
         # Add delimiter to payload
@@ -19,6 +19,8 @@ class LSBEncoder:
         print("Message encoded")
 
         # Save modified image
+        img.save(output_path)
+        print(f"Image saved to {output_path}")
 
 
     # Embed the binary message into the image pixels
