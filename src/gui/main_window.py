@@ -344,6 +344,7 @@ class MainWindow(QMainWindow):
 
         # Show hide preview frames
         self.preview_container.setVisible(self.section["has_preview"])
+
         # Update output label for preview windows
         if self.section["has_preview"]:
             if self.section["is_encoding"]:
@@ -365,6 +366,22 @@ class MainWindow(QMainWindow):
         self.encoding_panel.setVisible(bool(self.section["algorithms"]))
 
         # Update file picker visibility
+        if section_id == "image_encode":
+            print("Image encode selected")
+            self.file_picker.setVisible(True)
+            self.file_types_label.setVisible(True)
+            self.payload_picker.setVisible(True)
+            self.payload_types_label.setVisible(True)
+        elif section_id == "image_decode":
+            self.file_picker.setVisible(True)
+            self.file_types_label.setVisible(True)
+            self.payload_picker.setVisible(False)
+            self.payload_types_label.setVisible(False)
+        else:
+            self.file_picker.setVisible(False)
+            self.file_types_label.setVisible(False)
+            self.payload_picker.setVisible(False)
+            self.payload_types_label.setVisible(False)
 
         # Update action button
         if self.section["is_encoding"]:

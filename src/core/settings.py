@@ -23,8 +23,12 @@ class Settings():
                     "randomize_positions": False
                 }
         elif o_type == "decode":
-            # Decoding definitions
-            pass
+            if a_type == "image_decode":
+                self.settings = {
+                    "bit_planes": 1,
+                    "color_channels": ["R", "G", "B"],
+                    "randomize_positions": False
+                }
 
     def update_setting(self, key, value):
         if key in self.settings:
