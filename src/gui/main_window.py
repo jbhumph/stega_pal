@@ -6,6 +6,7 @@ from gui.widgets.file_picker import FilePicker
 from gui.widgets.encoding_panel import EncodingPanel
 from core.settings import Settings
 from core.encoders import get_encoder
+from core.decoders import get_decoder
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -448,12 +449,16 @@ class MainWindow(QMainWindow):
         o_path = f_path.replace(".png", "_steg.png")
         settings = self.settings
 
-        # Load payload data
-        with open(p_path, 'r') as f:
-            payload = f.read()
-
-        # Encrypt if enabled
-
         # Select and run encoder/decoder
-        encoder = get_encoder(self.section["class"], self.encoding_panel.get_selected_algorithm())
-        result = encoder.encode(f_path, payload, settings, o_path)
+        if self.type == "encode":
+            # Load payload data
+            with open(p_path, 'r') as f:
+                payload = f.read()
+
+            # Encrypt if enabled
+            encoder = get_encoder(self.section["class"], self.encoding_panel.get_selected_algorithm())
+            result = encoder.encode(f_path, payload, settings, o_path)
+        else:
+            decoder = get_decoder(self.section["class"], self.encoding_panel.get_selected_algorithm())
+            result = decoder.decode(f_path, settings)
+            print(result)
