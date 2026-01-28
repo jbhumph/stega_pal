@@ -21,6 +21,7 @@ class LSBEncoder:
         # Save modified image
         img.save(output_path)
         print(f"Image saved to {output_path}")
+        return output_path
 
 
     # Embed the binary message into the image pixels

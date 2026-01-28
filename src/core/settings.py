@@ -27,7 +27,10 @@ class Settings():
                 self.settings = {
                     "bit_planes": 1,
                     "color_channels": ["R", "G", "B"],
-                    "randomize_positions": False
+                    "randomize_positions": False,
+                    "delimiter_type": "null_terminator",
+                    "length": 8,
+                    "magic_sequence": "1111111100000000",
                 }
 
     def update_setting(self, key, value):

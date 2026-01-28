@@ -458,7 +458,27 @@ class MainWindow(QMainWindow):
             # Encrypt if enabled
             encoder = get_encoder(self.section["class"], self.encoding_panel.get_selected_algorithm())
             result = encoder.encode(f_path, payload, settings, o_path)
+            self.display_output(result, "image")
         else:
             decoder = get_decoder(self.section["class"], self.encoding_panel.get_selected_algorithm())
             result = decoder.decode(f_path, settings)
             print(result)
+            self.display_output(result, "text")
+
+
+    def display_output(self, result, type):
+        # Display output of operation
+        if type == "image":
+            pixmap = QPixmap(result)
+            if not pixmap.isNull():
+                self._output_pixmap = pixmap
+                self._update_image_display()
+            else:
+                self.output_image.setText("Failed to load image")
+            self._output_pixmap = pixmap
+            self._update_image_display()
+            self.output_stack.setCurrentIndex(0)  # Switch to image view
+        else:
+            self.output_text.setText(result)
+            self.output_stack.setCurrentIndex(1)  # Switch to text view
+        

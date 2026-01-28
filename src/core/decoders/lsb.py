@@ -5,14 +5,58 @@ class LSBDecoder:
         # Implementation of LSB decoding
         
         # Load image and get pixel access
-        #img, pixels = self.load_image(settings, file_path)
-        #print("Image loaded")
+        img, pixels = self.load_image(settings, file_path)
+        print("Image loaded")
 
-        # Decode message from image
+        # Declare delimiter type
+        delimiter_type = settings.get_settings('delimiter_type')
+        magic_seq = settings.get_settings('magic_sequence')
+        print(f"Delimiter type: {delimiter_type}")
+        print(f"Magic sequence: {magic_seq}")
 
-        # Extract binary message from image
+        # Extract bits from image
+        extracted_bits = []
+        for y in range(img.height):
+            for x in range(img.width):
+                r, g, b = pixels[x, y]
+                channels = [r, g, b]
 
-        # Convert binary to text
+                for channel in channels:
+                    extracted_bits.append(str(channel & 1))
+        binary_str = ''.join(extracted_bits)
+
+        # Check for length prefix
+        message_length = None
+        if delimiter_type == "length_prefix":
+            length_bits = binary_str[:8*8]  # First 64 bits for length (8 bits per char * 8 chars)
+            print(int(length_bits))
+            message_length = int(''.join(chr(int(length_bits[i:i+8], 2)) for i in range(0, len(length_bits), 8)))
+            print(message_length)
+
+        # Convert bits to characters
+        message = ""
+        for i in range(0, len(binary_str), 8):
+            byte = binary_str[i:i+8]
+            if len(byte) != 8:
+                break
+            code = int(byte, 2)
+            if magic_seq in message and delimiter_type == "magic_sequence":
+                message = message[:-len(magic_seq)]
+                break
+            elif code == 0 and delimiter_type == "null_terminator":
+                break
+            elif message_length is not None and len(message) >= message_length + 8 and delimiter_type == "length_prefix":
+                message = message[8:]
+                break
+            message += chr(code)
+        binary_output = len(message) * 8
+
 
         # Return decoded message
-        return "Decoded message"
+        return message
+    
+
+    def load_image(self, settings, file_path):
+        img = Image.open(file_path)
+        pixels = img.load()
+        return img, pixels
