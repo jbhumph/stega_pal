@@ -29,7 +29,8 @@ class MainWindow(QMainWindow):
                 "has_preview": True,
                 "is_encoding": True,
                 "file_types": ".png, .bmp, .tiff",
-                "algorithms": ["LSB"]
+                "algorithms": ["<-- none -->","LSB"],
+                "algo_options": {"LSB": ["bit_planes", "color_channels", "randomize_positions"]}
             },
             "audio_encode": {
                 "title": "Audio Encoding",
