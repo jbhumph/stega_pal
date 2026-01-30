@@ -334,7 +334,7 @@ class MainWindow(QMainWindow):
             self.type = "encode"
         else:
             self.type = "decode"
-        self.settings = Settings(self.type, section_id)
+        self.settings = Settings()
 
         # Update navigation buttons
         for btn, sid in self.nav_button_group:
@@ -364,7 +364,7 @@ class MainWindow(QMainWindow):
             self.file_types_label.setVisible(False)
 
         # Update encoding panel
-        self.encoding_panel.set_algorithms(self.section["algorithms"])
+        self.encoding_panel.set_section(section_id, self.section["algorithms"])
         self.encoding_panel.setVisible(bool(self.section["algorithms"]))
 
         # Update file picker visibility
@@ -448,7 +448,8 @@ class MainWindow(QMainWindow):
         f_path = self.file_picker.get_file_path()
         p_path = self.payload_picker.get_file_path()
         o_path = f_path.replace(".png", "_steg.png")
-        settings = self.settings
+        settings = Settings()
+        settings.update_settings(self.encoding_panel.get_settings())
 
         # Select and run encoder/decoder
         if self.type == "encode":

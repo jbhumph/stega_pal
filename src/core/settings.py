@@ -1,41 +1,9 @@
-class Settings():
-    def __init__(self, o_type, algo):
-        self.encoding_algorithm = "LSB"
-        self.error_correction = False
-        self.payload_encryption = False
-        self.compression = False
+class Settings:
+    def __init__(self):
+        self.algorithm_settings = {}
 
-        self.settings = {}
-        self._setup_defaults(o_type, algo)
+    def update_settings(self, settings: dict):
+        self.algorithm_settings.update(settings)
 
-    def _setup_defaults(self, o_type, a_type):
-        if o_type == "encode":
-            if a_type == "image_encode":
-                self.settings = {
-                    "bit_planes": 1,
-                    "color_channels": ["R", "G", "B"],
-                    "randomize_positions": False
-                }
-            elif a_type == "DCT":
-                self.settings = {
-                    "bit_planes": 1,
-                    "color_channels": ["R", "G", "B"],
-                    "randomize_positions": False
-                }
-        elif o_type == "decode":
-            if a_type == "image_decode":
-                self.settings = {
-                    "bit_planes": 1,
-                    "color_channels": ["R", "G", "B"],
-                    "randomize_positions": False,
-                    "delimiter_type": "null_terminator",
-                    "length": 8,
-                    "magic_sequence": "1111111100000000",
-                }
-
-    def update_setting(self, key, value):
-        if key in self.settings:
-            self.settings[key] = value
-
-    def get_settings(self, key):
-        return self.settings.get(key, None)
+    def get_setting(self, key: str, default=None):
+        return self.algorithm_settings.get(key, default)
