@@ -34,6 +34,13 @@ LSB_IMAGE_ENCODE = AlgorithmConfig(
     media_type="image",
     settings=[
         SettingDef(
+            key="delimiter",
+            label="Delimiter",
+            widget_type=WidgetType.COMBOBOX,
+            default="NULL",
+            options=["NULL", "Magic Sequence"],
+        ),
+        SettingDef(
             key="bit_planes",
             label="Bit Planes",
             widget_type=WidgetType.SPINBOX,

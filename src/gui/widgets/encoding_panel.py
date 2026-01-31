@@ -21,11 +21,6 @@ class EncodingPanel(QWidget):
         self._current_config = None
         self._value_getters = {}
         self._setup_ui()
-        """
-        self._algorithms = []
-        self._setup_ui()
-        self.selected_algorithm = None
-        """
 
     def _setup_ui(self):
         layout = QVBoxLayout(self)
@@ -123,7 +118,8 @@ class EncodingPanel(QWidget):
             return
         
         for setting in self._current_config.settings:
-            widget, value_getter = WidgetFactory.create_widget(setting)
+            widget, value_getter, label = WidgetFactory.create_widget(setting)
+            self.options_layout.addWidget(label)
             self.options_layout.addWidget(widget)
             self._value_getters[setting.key] = value_getter
 
