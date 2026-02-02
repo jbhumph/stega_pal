@@ -3,6 +3,8 @@ from PIL import Image
 class LSBDecoder:
     def decode(self, file_path, settings) -> str:
         # Implementation of LSB decoding
+        bit_planes = settings.get_setting("Bit Planes", 1)
+        print(f"Bit planes: {bit_planes}")
         
         # Load image and get pixel access
         img, pixels = self.load_image(settings, file_path)
@@ -23,7 +25,9 @@ class LSBDecoder:
                 channels = [r, g, b]
 
                 for channel in channels:
-                    extracted_bits.append(str(channel & 1))
+                    for plane in range(bit_planes):
+                        bit = (channel >> plane) & 1  # Extract bit at position 'plane'
+                        extracted_bits.append(str(bit))
         binary_str = ''.join(extracted_bits)
 
         # Check for length prefix

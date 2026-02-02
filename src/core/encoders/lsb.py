@@ -3,6 +3,8 @@ from PIL import Image
 class LSBEncoder:
     def encode(self, file_path, payload, settings, output_path) -> None:
         # Implementation of LSB encoding
+        bit_planes = settings.get_setting("Bit Planes", 1)
+        print(f"Bit planes: {bit_planes}")
 
         # Add delimiter and text payload to bits
         delimiter_type = settings.get_setting("delimiter", "NULL")
@@ -28,7 +30,7 @@ class LSBEncoder:
         print("Image loaded")
 
         # Encode message in image
-        self.encode_message(img, pixels, binary_output)
+        self.encode_message(img, pixels, binary_output, bit_planes)
         print("Message encoded")
 
         # Save modified image
@@ -38,9 +40,10 @@ class LSBEncoder:
 
 
     # Embed the binary message into the image pixels
-    def encode_message(self, img: Image, pixels, binary_output: str) -> None:
+    def encode_message(self, img: Image, pixels, binary_output: str, bit_planes: int) -> None:
         bit_index = 0
         total_bits = len(binary_output)
+        mask = ~((1 << bit_planes) - 1)
 
         for y in range(img.height):
             for x in range(img.width):
@@ -54,9 +57,16 @@ class LSBEncoder:
                     if bit_index >= total_bits:
                         break
 
-                    message_bit = int(binary_output[bit_index])
-                    channels[channel_index] = (channels[channel_index] & ~1) | message_bit
-                    bit_index += 1
+                    message_bits = 0
+                    for plane in range(bit_planes):
+                        if bit_index < total_bits:
+                            bit = int(binary_output[bit_index])
+                            message_bits |= (bit << plane)  # Pack bit into correct position
+                            bit_index += 1
+                        else:
+                            break
+
+                    channels[channel_index] = (channels[channel_index] & mask) | message_bits
 
                 pixels[x, y] = tuple(channels)
 
