@@ -38,7 +38,8 @@ LSB_IMAGE_ENCODE = AlgorithmConfig(
             label="Delimiter",
             widget_type=WidgetType.COMBOBOX,
             default="NULL",
-            options=["NULL", "Magic Sequence"],
+            options=["NULL Terminator", "Magic Sequence", "None"],
+            tooltip="Type of delimiter to use for the payload."
         ),
         SettingDef(
             key="bit_planes",
@@ -73,6 +74,14 @@ LSB_IMAGE_DECODE = AlgorithmConfig(
     display_name="Least Significant Bit",
     media_type="image",
     settings=[
+        SettingDef(
+            key="delimiter",
+            label="Delimiter",
+            widget_type=WidgetType.COMBOBOX,
+            default="NULL",
+            options=["NULL Terminator", "Magic Sequence", "None"],
+            tooltip="Type of delimiter to use for the payload."
+        ),
         SettingDef(
             key="bit_planes",
             label="Bit Planes",

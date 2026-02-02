@@ -9,8 +9,9 @@ class LSBDecoder:
         print("Image loaded")
 
         # Declare delimiter type
-        delimiter_type = settings.get_settings('delimiter_type')
-        magic_seq = settings.get_settings('magic_sequence')
+        delimiter_type = settings.get_setting('delimiter', 'NULL')
+        print(delimiter_type)
+        magic_seq = "1111111100000000"
         print(f"Delimiter type: {delimiter_type}")
         print(f"Magic sequence: {magic_seq}")
 
@@ -40,10 +41,10 @@ class LSBDecoder:
             if len(byte) != 8:
                 break
             code = int(byte, 2)
-            if magic_seq in message and delimiter_type == "magic_sequence":
+            if magic_seq in message and delimiter_type == "Magic Sequence":
                 message = message[:-len(magic_seq)]
                 break
-            elif code == 0 and delimiter_type == "null_terminator":
+            elif code == 0 and delimiter_type == "NULL Terminator":
                 break
             elif message_length is not None and len(message) >= message_length + 8 and delimiter_type == "length_prefix":
                 message = message[8:]

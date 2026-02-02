@@ -19,6 +19,7 @@ class EncodingPanel(QWidget):
         self._section_id = None
         self._current_algorithm = None
         self._current_config = None
+        self._current_settings = {}
         self._value_getters = {}
         self._setup_ui()
 

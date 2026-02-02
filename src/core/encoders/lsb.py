@@ -3,11 +3,24 @@ from PIL import Image
 class LSBEncoder:
     def encode(self, file_path, payload, settings, output_path) -> None:
         # Implementation of LSB encoding
-        
-        # Add delimiter to payload
 
-        # text payload to bits
+        # Add delimiter and text payload to bits
+        delimiter_type = settings.get_setting("delimiter", "NULL")
+        print(delimiter_type)
         binary_output = self.text_to_binary(payload + "<END>")
+
+        if delimiter_type == 'NULL Terminator':
+            binary_output = self.text_to_binary(payload + '\0')
+            print("Using NULL terminator delimiter")
+        elif delimiter_type == 'Magic Sequence':
+            magic_seq = "1111111100000000"
+            binary_output = self.text_to_binary(payload + magic_seq)
+            print("Using Magic Sequence delimiter")
+        else:
+            binary_output = self.text_to_binary(payload)
+            print("Using no delimiter")
+
+
         print("Converted to binary")
 
         # Load image and get pixel access

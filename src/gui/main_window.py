@@ -334,7 +334,6 @@ class MainWindow(QMainWindow):
             self.type = "encode"
         else:
             self.type = "decode"
-        self.settings = Settings()
 
         # Update navigation buttons
         for btn, sid in self.nav_button_group:
@@ -450,6 +449,7 @@ class MainWindow(QMainWindow):
         o_path = f_path.replace(".png", "_steg.png")
         settings = Settings()
         settings.update_settings(self.encoding_panel.get_settings())
+        print(settings.get_all_settings())
 
         # Select and run encoder/decoder
         if self.type == "encode":

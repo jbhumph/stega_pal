@@ -7,3 +7,6 @@ class Settings:
 
     def get_setting(self, key: str, default=None):
         return self.algorithm_settings.get(key, default)
+    
+    def get_all_settings(self) -> dict:
+        return self.algorithm_settings
