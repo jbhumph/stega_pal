@@ -3,7 +3,7 @@ from PIL import Image
 class LSBEncoder:
     def encode(self, file_path, payload, settings, output_path) -> None:
         # Implementation of LSB encoding
-        bit_planes = settings.get_setting("Bit Planes", 1)
+        bit_planes = settings.get_setting("bit_planes", 1)
         print(f"Bit planes: {bit_planes}")
 
         # Add delimiter and text payload to bits

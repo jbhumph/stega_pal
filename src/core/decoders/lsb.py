@@ -3,7 +3,7 @@ from PIL import Image
 class LSBDecoder:
     def decode(self, file_path, settings) -> str:
         # Implementation of LSB decoding
-        bit_planes = settings.get_setting("Bit Planes", 1)
+        bit_planes = settings.get_setting("bit_planes", 1)
         print(f"Bit planes: {bit_planes}")
         
         # Load image and get pixel access
