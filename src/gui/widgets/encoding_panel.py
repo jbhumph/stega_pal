@@ -57,6 +57,10 @@ class EncodingPanel(QWidget):
                 color: #e0e0e0;
                 selection-background-color: #0d6efd;
             }
+            QComboBox QAbstractItemView {
+                border: 1px solid #6d42bd;
+                selection-background-color: #6d42bd;
+            }
         """)
         self.algo_combo.currentTextChanged.connect(self._on_algorithm_changed)
         layout.addWidget(self.algo_combo)
@@ -118,11 +122,22 @@ class EncodingPanel(QWidget):
             self.options_group.setVisible(False)
             return
         
+        self.encryption_widget = None
+        self.password_widget = None
+        self.password_text_label = None
         for setting in self._current_config.settings:
             widget, value_getter, label = WidgetFactory.create_widget(setting)
             self.options_layout.addWidget(label)
             self.options_layout.addWidget(widget)
             self._value_getters[setting.key] = value_getter
+            if setting.key == "password":
+                widget.setVisible(False)
+                self.password_widget = widget
+                label.setVisible(False)
+                self.password_text_label = label
+            if setting.key == "encryption":
+                widget.currentTextChanged.connect(self._on_encryption_changed)
+
 
         self.options_layout.addStretch()
         self.options_group.setVisible(True)
@@ -147,3 +162,15 @@ class EncodingPanel(QWidget):
     def set_settings(self, settings: dict[str, Any]) -> None:
         # Set setting values. Implement as needed.
         return 0
+    
+    def _on_encryption_changed(self, value: str):
+        if value != "None":
+            if self.password_widget:
+                self.password_widget.setVisible(True)
+            if self.password_text_label:
+                self.password_text_label.setVisible(True)
+        else:
+            if self.password_widget:
+                self.password_widget.setVisible(False)
+            if self.password_text_label:
+                self.password_text_label.setVisible(False)

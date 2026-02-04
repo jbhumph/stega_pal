@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QSpinBox, QWidget, QCheckBox, QComboBox, QSlider, QVBoxLayout, QHBoxLayout, QLabel
+from PySide6.QtWidgets import QSpinBox, QWidget, QCheckBox, QComboBox, QSlider, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit
 
 from core.algo_configs import SettingDef, WidgetType
 
@@ -29,6 +29,10 @@ class WidgetFactory:
         elif setting_def.widget_type == WidgetType.MULTI_CHECKBOX:
             widget = WidgetFactory._create_multi_checkbox(setting_def)
             value_getter = lambda: [cb.text() for cb in widget.findChildren(QCheckBox) if cb.isChecked()]
+            return widget, value_getter, label
+        elif setting_def.widget_type == WidgetType.TEXTBOX:
+            widget = WidgetFactory._create_textbox(setting_def)
+            value_getter = lambda: widget.text()
             return widget, value_getter, label
         else:
             raise ValueError(f"Unknown widget type: {setting_def.widget_type}")
@@ -70,11 +74,14 @@ class WidgetFactory:
         if setting_def.default in setting_def.options:
             combobox.setCurrentText(setting_def.default)
         combobox.setStyleSheet("""
+            QComboBox {   
                 background-color: #1e1e1e;
                 border: 1px solid #404040;
                 border-radius: 4px;
                 padding: 8px;
                 color: #e0e0e0;
+            }
+            
         """)
         return combobox
 
@@ -87,3 +94,18 @@ class WidgetFactory:
             checkbox.setChecked(option in setting_def.default)
             layout.addWidget(checkbox)
         return container
+    
+    @staticmethod
+    def _create_textbox(setting_def: SettingDef) -> QLineEdit:
+        textbox = QLineEdit()
+        textbox.setEchoMode(QLineEdit.EchoMode.Password)
+        textbox.setText(setting_def.default)
+        textbox.setPlaceholderText("Enter password here")
+        textbox.setStyleSheet("""
+                background-color: #1e1e1e;
+                border: 1px solid #404040;
+                border-radius: 4px;
+                padding: 8px;
+                color: #e0e0e0;
+        """)
+        return textbox

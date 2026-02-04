@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QFrame, QStackedWidget, QSplitter, QSizePolicy, QTextEdit
+from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QFrame, QStackedWidget, QSplitter, QSizePolicy, QTextEdit, QScrollArea
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 
@@ -29,8 +29,7 @@ class MainWindow(QMainWindow):
                 "has_preview": True,
                 "is_encoding": True,
                 "file_types": ".png, .bmp, .tiff",
-                "algorithms": ["<-- none -->","LSB"],
-                "algo_options": {"LSB": ["bit_planes", "color_channels", "randomize_positions"]}
+                "algorithms": ["LSB"]
             },
             "audio_encode": {
                 "title": "Audio Encoding",
@@ -293,29 +292,43 @@ class MainWindow(QMainWindow):
         layout.setContentsMargins(15, 20, 15, 20)
         layout.setSpacing(15)
 
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setFrameShape(QFrame.Shape.NoFrame)
+        scroll_area.setStyleSheet("QScrollArea { border: none; background-color: transparent; margin: 0px; padding: 0px; } QScrollBar:vertical { background-color: #2d2d2d; width: 8px; margin: 0px; } QScrollBar::handle:vertical { background-color: #555555; border-radius: 4px; } QScrollBar::handle:vertical:hover { background-color: #777777; } QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0px; }")
+
+        scroll_content = QWidget()
+        scroll_layout = QVBoxLayout(scroll_content)
+        scroll_layout.setContentsMargins(0, 0, 10, 0)
+        scroll_layout.setSpacing(15)
+
         # File Picker
         self.file_picker = FilePicker()
-        layout.addWidget(self.file_picker)
+        scroll_layout.addWidget(self.file_picker)
 
         # Allowed File Types
         self.file_types_label = QLabel()
         self.file_types_label.setStyleSheet("font-size: 12px; color: #888888;")
-        layout.addWidget(self.file_types_label)
+        scroll_layout.addWidget(self.file_types_label)
 
         # Payload Picker
         self.payload_picker = FilePicker("Select Payload")
-        layout.addWidget(self.payload_picker)
+        scroll_layout.addWidget(self.payload_picker)
 
         # Payload File Types
         self.payload_types_label = QLabel("Allowed types: All Files")
         self.payload_types_label.setStyleSheet("font-size: 12px; color: #888888;")
-        layout.addWidget(self.payload_types_label)
+        scroll_layout.addWidget(self.payload_types_label)
 
         # Encoding Panel Algo Options
         self.encoding_panel = EncodingPanel()
-        layout.addWidget(self.encoding_panel)
-
+        scroll_layout.addWidget(self.encoding_panel)
         layout.addStretch()
+
+        scroll_layout.addStretch()
+
+        scroll_area.setWidget(scroll_content)
+        layout.addWidget(scroll_area, 1)
 
         # Action button
         self.action_button = QPushButton("Encode")
@@ -324,6 +337,7 @@ class MainWindow(QMainWindow):
         self.action_button.clicked.connect(self._on_action_button_clicked)
 
         return options_widget
+    
     
     def _switch_section(self, section_id):
         # Changes scenes between different options

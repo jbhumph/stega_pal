@@ -8,6 +8,7 @@ class WidgetType(Enum):
     SLIDER = "slider"
     COMBOBOX = "combobox"
     MULTI_CHECKBOX = "multi_checkbox"
+    TEXTBOX = "textbox"
 
 @dataclass
 class SettingDef:
@@ -59,11 +60,19 @@ LSB_IMAGE_ENCODE = AlgorithmConfig(
             tooltip="Color channels to use for encoding."
         ),
         SettingDef(
-            key="randomize_positions",
-            label="Randomize Positions",
-            widget_type=WidgetType.CHECKBOX,
-            default=False,
-            tooltip="Randomize pixel positions for encoding."
+            key="encryption",
+            label="Encryption",
+            widget_type=WidgetType.COMBOBOX,
+            default="None",
+            options=["None", "AES"],
+            tooltip="Encrypt the payload before encoding."
+        ),
+        SettingDef(
+            key="password",
+            label="Password",
+            widget_type=WidgetType.TEXTBOX,
+            default="",
+            tooltip="Password for encryption (if applicable)."
         ),
     ],
     description="Least Significant Bit encoding for images."
@@ -100,11 +109,19 @@ LSB_IMAGE_DECODE = AlgorithmConfig(
             tooltip="Color channels to read for decoding."
         ),
         SettingDef(
-            key="randomize_positions",
-            label="Randomize Positions",
-            widget_type=WidgetType.CHECKBOX,
-            default=False,
-            tooltip="Randomize pixel positions for decoding."
+            key="encryption",
+            label="Encryption",
+            widget_type=WidgetType.COMBOBOX,
+            default="None",
+            options=["None", "AES"],
+            tooltip="Encrypt the payload before encoding."
+        ),
+        SettingDef(
+            key="password",
+            label="Password",
+            widget_type=WidgetType.TEXTBOX,
+            default="",
+            tooltip="Password for encryption (if applicable)."
         ),
     ],
 )
