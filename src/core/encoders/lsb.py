@@ -30,7 +30,7 @@ class LSBEncoder:
         print("Image loaded")
 
         # Encode message in image
-        self.encode_message(img, pixels, binary_output, bit_planes)
+        self.encode_message(img, pixels, binary_output, bit_planes, settings)
         print("Message encoded")
 
         # Save modified image
@@ -40,7 +40,7 @@ class LSBEncoder:
 
 
     # Embed the binary message into the image pixels
-    def encode_message(self, img: Image, pixels, binary_output: str, bit_planes: int) -> None:
+    def encode_message(self, img: Image, pixels, binary_output: str, bit_planes: int, settings) -> None:
         bit_index = 0
         total_bits = len(binary_output)
         mask = ~((1 << bit_planes) - 1)
@@ -56,6 +56,15 @@ class LSBEncoder:
                 for channel_index in range(3):
                     if bit_index >= total_bits:
                         break
+
+                    if "R" in settings.get_setting("color_channels", ["R", "G", "B"]) and channel_index == 0:
+                        pass
+                    elif "G" in settings.get_setting("color_channels", ["R", "G", "B"]) and channel_index == 1:
+                        pass
+                    elif "B" in settings.get_setting("color_channels", ["R", "G", "B"]) and channel_index == 2:
+                        pass
+                    else:
+                        continue
 
                     message_bits = 0
                     for plane in range(bit_planes):

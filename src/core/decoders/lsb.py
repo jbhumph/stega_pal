@@ -22,7 +22,13 @@ class LSBDecoder:
         for y in range(img.height):
             for x in range(img.width):
                 r, g, b = pixels[x, y]
-                channels = [r, g, b]
+                channels = []
+                if "R" in settings.get_setting("color_channels", ["R", "G", "B"]):
+                    channels.append(r)
+                if "G" in settings.get_setting("color_channels", ["R", "G", "B"]):
+                    channels.append(g)
+                if "B" in settings.get_setting("color_channels", ["R", "G", "B"]):
+                    channels.append(b)
 
                 for channel in channels:
                     for plane in range(bit_planes):
