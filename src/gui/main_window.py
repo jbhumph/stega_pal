@@ -471,7 +471,6 @@ class MainWindow(QMainWindow):
             with open(p_path, 'r') as f:
                 payload = f.read()
 
-            # Encrypt if enabled
             encoder = get_encoder(self.section["class"], self.encoding_panel.get_selected_algorithm())
             result = encoder.encode(f_path, payload, settings, o_path)
             self.display_output(result, "image")

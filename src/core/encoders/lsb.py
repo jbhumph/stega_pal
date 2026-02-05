@@ -1,15 +1,22 @@
 from PIL import Image
 
+from core.crypto.encrypt import encrypt_message
+
 class LSBEncoder:
     def encode(self, file_path, payload, settings, output_path) -> None:
         # Implementation of LSB encoding
         bit_planes = settings.get_setting("bit_planes", 1)
         print(f"Bit planes: {bit_planes}")
 
+        # Encrypt payload if encryption is enabled
+        if settings.get_setting("encryption") and settings.get_setting("encryption") != "None":
+            payload = encrypt_message(payload, settings.get_setting("password", ""))
+            print(payload)
+
         # Add delimiter and text payload to bits
         delimiter_type = settings.get_setting("delimiter", "NULL")
         print(delimiter_type)
-        binary_output = self.text_to_binary(payload + "<END>")
+        binary_output = self.text_to_binary(payload)
 
         if delimiter_type == 'NULL Terminator':
             binary_output = self.text_to_binary(payload + '\0')
