@@ -354,6 +354,7 @@ class MainWindow(QMainWindow):
         self.action_button.setEnabled = False
         layout.addWidget(self.action_button)
         self.action_button.clicked.connect(self._on_action_button_clicked)
+        self.action_button.setStyleSheet("background-color: #6d42bd;")
 
         return options_widget
     

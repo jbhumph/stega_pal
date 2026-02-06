@@ -92,7 +92,31 @@ class WidgetFactory:
         for option in setting_def.options or []:
             checkbox = QCheckBox(option)
             checkbox.setChecked(option in setting_def.default)
+            checkbox.setStyleSheet("""
+                QCheckBox {
+                    color: #e0e0e0;
+                    spacing: 8px;
+                }
+                QCheckBox::indicator {
+                    width: 16px;
+                    height: 16px;
+                    border: 1px solid #404040;
+                    border-radius: 3px;
+                    background-color: #1e1e1e;
+                }
+                QCheckBox::indicator:checked {
+                    background-color: #6d42bd;
+                    border: 1px solid #6d42bd;
+                }
+                QCheckBox::indicator:unchecked:hover {
+                    border: 1px solid #6d42bd;
+                }
+                QCheckBox::indicator:checked:hover {
+                    background-color: #8b5fcf;
+                }
+            """)
             layout.addWidget(checkbox)
+        
         return container
     
     @staticmethod
