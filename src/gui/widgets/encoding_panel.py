@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Signal
 
-from core.algo_configs import get_algorithm_config, SettingDef
+from core.algo_configs import WidgetType, get_algorithm_config, SettingDef
 from .widget_factory import WidgetFactory
 
 class EncodingPanel(QWidget):
@@ -130,6 +130,16 @@ class EncodingPanel(QWidget):
             self.options_layout.addWidget(label)
             self.options_layout.addWidget(widget)
             self._value_getters[setting.key] = value_getter
+
+            if setting.widget_type == WidgetType.SPINBOX:
+                widget.valueChanged.connect(self._emit_settings_changed)
+            elif setting.widget_type == WidgetType.COMBOBOX:
+                widget.currentTextChanged.connect(self._emit_settings_changed)
+            elif setting.widget_type == WidgetType.MULTI_CHECKBOX:
+                for cb in widget.findChildren(QCheckBox):
+                    cb.stateChanged.connect(self._emit_settings_changed)
+
+
             if setting.key == "password":
                 widget.setVisible(False)
                 self.password_widget = widget
@@ -174,3 +184,7 @@ class EncodingPanel(QWidget):
                 self.password_widget.setVisible(False)
             if self.password_text_label:
                 self.password_text_label.setVisible(False)
+
+
+    def _emit_settings_changed(self):
+        self.settings_changed.emit(self.get_settings())

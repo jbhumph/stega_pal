@@ -278,6 +278,24 @@ class MainWindow(QMainWindow):
         preview_layout.addWidget(self.output_frame, 1)
 
         layout.addWidget(self.preview_container)
+
+        # Payload capacity calculator
+        self.capacity_label = QLabel()
+        self.capacity_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.capacity_label.setStyleSheet("""
+            QLabel {
+                color: white;
+                font-size: 13px;
+                padding: 10px;
+                background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0,stop: 0 #3f078c, stop: 1 transparent);
+                border-radius: 4px;
+                margin: 10px 0px;
+            }
+        """)
+        self.capacity_label.setVisible(True)
+        self.capacity_label.setText("Estimated Payload Capacity: N/A")
+        layout.addWidget(self.capacity_label)
+
         layout.addStretch()
 
         return center_widget
@@ -322,6 +340,7 @@ class MainWindow(QMainWindow):
 
         # Encoding Panel Algo Options
         self.encoding_panel = EncodingPanel()
+        self.encoding_panel.settings_changed.connect(self._on_settings_changed)
         scroll_layout.addWidget(self.encoding_panel)
         layout.addStretch()
 
@@ -387,16 +406,19 @@ class MainWindow(QMainWindow):
             self.file_types_label.setVisible(True)
             self.payload_picker.setVisible(True)
             self.payload_types_label.setVisible(True)
+            self.capacity_label.setVisible(True)
         elif section_id == "image_decode":
             self.file_picker.setVisible(True)
             self.file_types_label.setVisible(True)
             self.payload_picker.setVisible(False)
             self.payload_types_label.setVisible(False)
+            self.capacity_label.setVisible(False)
         else:
             self.file_picker.setVisible(False)
             self.file_types_label.setVisible(False)
             self.payload_picker.setVisible(False)
             self.payload_types_label.setVisible(False)
+            self.capacity_label.setVisible(False)
 
         # Update action button
         if self.section["is_encoding"]:
@@ -419,6 +441,7 @@ class MainWindow(QMainWindow):
         if not pixmap.isNull():
             self._input_pixmap = pixmap
             self._update_image_display()
+            self._calculate_capacity()
         else:
             self.input_image.setText("Failed to load image")
 
@@ -496,4 +519,40 @@ class MainWindow(QMainWindow):
         else:
             self.output_text.setText(result)
             self.output_stack.setCurrentIndex(1)  # Switch to text view
+
+
+    def _calculate_capacity(self):
+        # Calculate and display maximum payload capacity
+        if not self._input_pixmap:
+            self.capacity_label.setText("Estimated Payload Capacity: N/A. Load an image to calculate.")
+            return
         
+        width = self._input_pixmap.width()
+        height = self._input_pixmap.height()
+        total_pixels = width * height
+
+        settings = Settings()
+        settings.update_settings(self.encoding_panel.get_settings())
+        bit_planes = settings.get_setting("bit_planes", 1)
+        color_channels = settings.get_setting("color_channels", ["R", "G", "B"])
+        num_channels = len(color_channels)
+        
+        bits_per_pixel = bit_planes * num_channels
+        total_bits = total_pixels * bits_per_pixel
+        total_bytes = total_bits // 8
+
+        if total_bytes < 1024:
+            capacity_str = f"{total_bytes} bytes"
+        elif total_bytes < 1024 * 1024:
+            capacity_kb = total_bytes / 1024
+            capacity_str = f"{capacity_kb:.2f} KB"
+        else:
+            capacity_mb = total_bytes / (1024 * 1024)
+            capacity_str = f"{capacity_mb:.2f} MB"
+
+        self.capacity_label.setText(f"Estimated Payload Capacity: {capacity_str}")
+        self.capacity_label.setVisible(True)
+
+    def _on_settings_changed(self):
+        # Handle changes in encoding/decoding settings
+        self._calculate_capacity()
