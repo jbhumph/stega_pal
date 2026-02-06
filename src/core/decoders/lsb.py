@@ -1,5 +1,7 @@
 from PIL import Image
 
+from core.crypto.encrypt import decrypt_message
+
 class LSBDecoder:
     def decode(self, file_path, settings) -> str:
         # Implementation of LSB decoding
@@ -61,6 +63,15 @@ class LSBDecoder:
                 break
             message += chr(code)
         binary_output = len(message) * 8
+
+        # decrypt message if encryption is enabled
+        if settings.get_setting("encryption") and settings.get_setting("encryption") != "None":
+            try:
+                message = decrypt_message(message.encode(), settings.get_setting("password", ""))
+                print("Message decrypted")
+            except ValueError as e:
+                print(f"Decryption failed: {e}")
+                return ""
 
 
         # Return decoded message
