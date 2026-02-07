@@ -105,11 +105,11 @@ class WidgetFactory:
                     background-color: #1e1e1e;
                 }
                 QCheckBox::indicator:checked {
-                    background-color: #6d42bd;
-                    border: 1px solid #6d42bd;
+                    background-color: #888888;
+                    border: 1px solid #404040;
                 }
                 QCheckBox::indicator:unchecked:hover {
-                    border: 1px solid #6d42bd;
+                    border: 1px solid #404040;
                 }
                 QCheckBox::indicator:checked:hover {
                     background-color: #8b5fcf;

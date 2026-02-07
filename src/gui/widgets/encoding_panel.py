@@ -3,7 +3,7 @@ from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QComboBox,
     QCheckBox, QSpinBox, QGroupBox
 )
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, QEvent
 
 from core.algo_configs import WidgetType, get_algorithm_config, SettingDef
 from .widget_factory import WidgetFactory
@@ -13,6 +13,7 @@ class EncodingPanel(QWidget):
 
     algorithm_changed = Signal(str)
     settings_changed = Signal(dict)
+    tooltip_hovered = Signal(str)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -21,6 +22,7 @@ class EncodingPanel(QWidget):
         self._current_config = None
         self._current_settings = {}
         self._value_getters = {}
+        self._widget_tooltips = {}
         self._setup_ui()
 
     def _setup_ui(self):
@@ -139,6 +141,11 @@ class EncodingPanel(QWidget):
                 for cb in widget.findChildren(QCheckBox):
                     cb.stateChanged.connect(self._emit_settings_changed)
 
+            # emit signal if tooltip is hovered
+            if setting.tooltip:
+                self._widget_tooltips[widget] = setting.tooltip
+                widget.installEventFilter(self)
+
 
             if setting.key == "password":
                 widget.setVisible(False)
@@ -188,3 +195,16 @@ class EncodingPanel(QWidget):
 
     def _emit_settings_changed(self):
         self.settings_changed.emit(self.get_settings())
+
+
+    def eventFilter(self, watched_object, event):
+        if event.type() == QEvent.Type.Enter:
+            tooltip_text = self._widget_tooltips.get(watched_object)
+            if tooltip_text:
+                self.tooltip_hovered.emit(tooltip_text)
+            return False
+        elif event.type() == QEvent.Type.Leave:
+            if watched_object in self._widget_tooltips:
+                self.tooltip_hovered.emit("")  # Clear tooltip on leave
+            return False
+        return super().eventFilter(watched_object, event)

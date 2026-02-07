@@ -29,7 +29,10 @@ class MainWindow(QMainWindow):
                 "has_preview": True,
                 "is_encoding": True,
                 "file_types": ".png, .bmp, .tiff",
-                "algorithms": ["LSB"]
+                "algorithms": ["LSB"],
+                "algo_descriptions": {
+                    "LSB": "Least Significant Bit (LSB) steganography embeds data in the least significant bits of image pixels."
+                }
             },
             "audio_encode": {
                 "title": "Audio Encoding",
@@ -287,7 +290,7 @@ class MainWindow(QMainWindow):
                 color: white;
                 font-size: 13px;
                 padding: 10px;
-                background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0,stop: 0 #3f078c, stop: 1 transparent);
+                background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0,stop: 0 #452b6e, stop: 1 transparent);
                 border-radius: 4px;
                 margin: 10px 0px;
             }
@@ -295,6 +298,42 @@ class MainWindow(QMainWindow):
         self.capacity_label.setVisible(True)
         self.capacity_label.setText("Estimated Payload Capacity: N/A")
         layout.addWidget(self.capacity_label)
+
+        # Algorithm description display
+        self.algo_description_label = QLabel()
+        self.algo_description_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.algo_description_label.setWordWrap(True)
+        self.algo_description_label.setStyleSheet("""
+            QLabel {
+                color: black;
+                font-size: 12px;
+                padding: 10px;
+                background-color: #9dd1a9;
+                border: 1px solid #404040;
+                border-radius: 4px;
+                margin: 1px 0px;
+            }
+        """)
+        self.algo_description_label.setVisible(True)
+        layout.addWidget(self.algo_description_label)
+
+        # Tooltip display
+        self.tooltip_label = QLabel()
+        self.tooltip_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.tooltip_label.setWordWrap(True)
+        self.tooltip_label.setStyleSheet("""
+            QLabel {
+                color: black;
+                font-size: 12px;
+                padding: 10px;
+                background-color: #ffd17d;
+                border: 1px solid #404040;
+                border-radius: 4px;
+                margin: 1px 0px;
+            }
+        """)
+        self.tooltip_label.setVisible(False)
+        layout.addWidget(self.tooltip_label)
 
         layout.addStretch()
 
@@ -340,7 +379,9 @@ class MainWindow(QMainWindow):
 
         # Encoding Panel Algo Options
         self.encoding_panel = EncodingPanel()
+        self.encoding_panel.algorithm_changed.connect(self._on_algorithm_changed)
         self.encoding_panel.settings_changed.connect(self._on_settings_changed)
+        self.encoding_panel.tooltip_hovered.connect(self._on_tooltip_hovered)
         scroll_layout.addWidget(self.encoding_panel)
         layout.addStretch()
 
@@ -557,3 +598,24 @@ class MainWindow(QMainWindow):
     def _on_settings_changed(self):
         # Handle changes in encoding/decoding settings
         self._calculate_capacity()
+
+    def _on_tooltip_hovered(self, tooltip_text: str):
+        # Display tooltip text when emitted from encoding panel
+        if tooltip_text:
+            self.tooltip_label.setText(tooltip_text)
+            self.tooltip_label.setVisible(True)
+        else:
+            self.tooltip_label.setVisible(False)
+
+    def _on_algorithm_changed(self, algorithm_name: str):
+        # Update algorithm description when algorithm selection changes
+        settings = Settings()
+        settings.update_settings(self.encoding_panel.get_settings())
+        section_info = self.sections.get(self.current_section, {})
+        algo_descriptions = section_info.get("algo_descriptions", {})
+        description = algo_descriptions.get(algorithm_name, "")
+        if description:
+            self.algo_description_label.setText(description)
+            self.algo_description_label.setVisible(True)
+        else:
+            self.algo_description_label.setVisible(False)
