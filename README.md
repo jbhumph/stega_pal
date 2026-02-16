@@ -192,7 +192,20 @@ The following features are planned for future releases:
 
 ## Screenshots
 
-*Screenshots will be added in a future update*
+Example of Image Encoding workflow:
+![image encoding workflow](docs/Screenshot%202026-02-16%20at%208.40.28 AM.png)
+
+Example of Image Decoding Workflow:
+![image decoding workflow](docs/Screenshot%202026-02-16%20at%208.41.31 AM.png)
+
+Audio Encoding splash page - to be implemented
+![audio encoding](docs/Screenshot%202026-02-16%20at%208.41.53 AM.png)
+
+Original Image:
+![original unaltered image](docs/a.png)
+
+Image containing Shakespeare's Macbeth in it's entirety:
+![image containing encoded text](docs/b.png)
 
 ---
 
