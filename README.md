@@ -211,4 +211,4 @@ Image containing Shakespeare's Macbeth in it's entirety:
 
 **Version**: 0.1.0 MVP
 **License**: TBD
-**Author**: John
+**Author**: John H
