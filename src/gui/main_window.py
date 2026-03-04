@@ -40,7 +40,7 @@ class MainWindow(QMainWindow):
                 "description": "Embed secret data within audio files. Audio steganography exploits "
                                "the limitations of human hearing to hide information in sound files "
                                "without perceptible quality loss.",
-                "has_preview": False,
+                "has_preview": True,
                 "is_encoding": True,
                 "file_types": ".wav, .flac",
                 "algorithms": []
@@ -84,7 +84,7 @@ class MainWindow(QMainWindow):
                 "description": "Retrieve hidden data from audio files that contain steganographic content. "
                                "The decoding process reverses the encoding algorithm to extract the "
                                "original payload.",
-                "has_preview": False,
+                "has_preview": True,
                 "is_encoding": False,
                 "file_types": ".wav, .flac",
                 "algorithms": []
@@ -450,6 +450,18 @@ class MainWindow(QMainWindow):
             self.payload_types_label.setVisible(True)
             self.capacity_label.setVisible(True)
         elif section_id == "image_decode":
+            self.file_picker.setVisible(True)
+            self.file_types_label.setVisible(True)
+            self.payload_picker.setVisible(False)
+            self.payload_types_label.setVisible(False)
+            self.capacity_label.setVisible(False)
+        elif section_id == "audio_encode":
+            self.file_picker.setVisible(True)
+            self.file_types_label.setVisible(True)
+            self.payload_picker.setVisible(False)
+            self.payload_types_label.setVisible(False)
+            self.capacity_label.setVisible(False)
+        elif section_id == "audio_decode":
             self.file_picker.setVisible(True)
             self.file_types_label.setVisible(True)
             self.payload_picker.setVisible(False)
