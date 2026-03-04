@@ -458,8 +458,8 @@ class MainWindow(QMainWindow):
         elif section_id == "audio_encode":
             self.file_picker.setVisible(True)
             self.file_types_label.setVisible(True)
-            self.payload_picker.setVisible(False)
-            self.payload_types_label.setVisible(False)
+            self.payload_picker.setVisible(True)
+            self.payload_types_label.setVisible(True)
             self.capacity_label.setVisible(False)
         elif section_id == "audio_decode":
             self.file_picker.setVisible(True)
@@ -486,6 +486,8 @@ class MainWindow(QMainWindow):
         # Listen for file picker
         if self.current_section == "image_encode":
             self.file_picker.file_selected.connect(self._load_input_image)
+        if self.current_selection == "audio_encode":
+            self.file_picker.file_selected.connect(self._load_input_audio)
 
         self.payload_picker.file_selected.connect(self._load_payload_file)
 
@@ -498,6 +500,11 @@ class MainWindow(QMainWindow):
             self._calculate_capacity()
         else:
             self.input_image.setText("Failed to load image")
+
+
+    def _load_input_audio(self, file_path):
+        # Load audio file for encoding
+        return 0
 
     def _load_payload_file(self, file_path):
         # Load payload file (for encoding)
