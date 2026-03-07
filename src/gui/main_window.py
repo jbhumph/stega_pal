@@ -5,6 +5,9 @@ from PySide6.QtGui import QPixmap
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 
+import soundfile as sf
+import numpy as np
+
 from gui.widgets.file_picker import FilePicker
 from gui.widgets.encoding_panel import EncodingPanel
 from core.settings import Settings
@@ -525,7 +528,44 @@ class MainWindow(QMainWindow):
 
     def _load_input_audio(self, file_path):
         # Load audio file for encoding
-        return 0
+        try: 
+            data, sample_rate = sf.read(file_path)
+        except Exception as e:
+            self.input_label.setText(f"Error loading audio file: {e}")
+            return
+        
+        n_samples = len(data)
+        duration = n_samples / sample_rate
+        time = np.linspace(0, duration, n_samples)
+
+        self._audio_fig.clear()
+        ax = self._audio_fig.add_subplot(111)
+
+        ax.set_facecolor('#252525')
+        ax.tick_params(colors='#888888', labelsize=8)
+        ax.xaxis.label.set_color('#888888')
+        ax.yaxis.label.set_color('#888888')
+        for spine in ax.spines.values():
+            spine.set_edgecolor('#404040')
+        self._audio_fig.subplots_adjust(left=0.1, right=0.98, top=0.92, bottom=0.2)
+
+        if data.ndim == 1:
+            # Mono audio
+            ax.plot(time, data, color='#6d42bd', linewidth=0.5)
+        else:
+            # Stereo audio
+            ax.plot(time, data[:, 0], color='#6d42bd', linewidth=0.5, label='L')
+            ax.plot(time, data[:, 1], color='#42bd6d', linewidth=0.5, label='R', alpha=0.7)
+            ax.legend(fontsize=7, facecolor='#2d2d2d', labelcolor='#888888', framealpha=0.5)
+
+        ax.set_xlabel("Time (s)", fontsize=8, color='#888888')
+        ax.set_ylabel("Amplitude", fontsize=8, color='#888888')
+        ax.set_title(file_path.split("/")[-1], fontsize=9, color='#e0e0e0', pad=6)
+        ax.set_xlim(0, duration)
+
+        self._audio_canvas.draw()
+        self.input_stack.setCurrentIndex(1)
+
 
     def _load_payload_file(self, file_path):
         # Load payload file (for encoding)
