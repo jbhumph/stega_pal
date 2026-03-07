@@ -2,6 +2,9 @@ from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QL
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+from matplotlib.figure import Figure
+
 from gui.widgets.file_picker import FilePicker
 from gui.widgets.encoding_panel import EncodingPanel
 from core.settings import Settings
@@ -239,12 +242,25 @@ class MainWindow(QMainWindow):
         self.input_label = QLabel("Input Preview")
         self.input_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.input_label.setStyleSheet("border: none; color: #888888;")
+        
+        #Stacked widget
+        self.input_stack = QStackedWidget()
+        self.input_stack.setStyleSheet("border: none;")
+
+        # Index 0: Image display
         self.input_image = QLabel()
         self.input_image.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.input_image.setStyleSheet("border: none;")
         self.input_image.setText("No image loaded")
+        self.input_stack.addWidget(self.input_image)
+
+        # Index 1: Waveform display
+        self._audio_fig = Figure(facecolor='#1e1e1e')
+        self._audio_canvas = FigureCanvasQTAgg(self._audio_fig)
+        self.input_stack.addWidget(self._audio_canvas)
+
         input_layout.addWidget(self.input_label)
-        input_layout.addWidget(self.input_image, 1)
+        input_layout.addWidget(self.input_stack, 1)
 
         # Output Preview Frame
         self.output_frame = QFrame()
@@ -421,6 +437,11 @@ class MainWindow(QMainWindow):
         # Show hide preview frames
         self.preview_container.setVisible(self.section["has_preview"])
 
+        if self.current_section in ["audio_encode", "audio_decode"]:
+            self.input_stack.setCurrentIndex(1)
+        else:
+            self.input_stack.setCurrentIndex(0)
+
         # Update output label for preview windows
         if self.section["has_preview"]:
             if self.section["is_encoding"]:
@@ -486,7 +507,7 @@ class MainWindow(QMainWindow):
         # Listen for file picker
         if self.current_section == "image_encode":
             self.file_picker.file_selected.connect(self._load_input_image)
-        if self.current_selection == "audio_encode":
+        if self.current_section == "audio_encode":
             self.file_picker.file_selected.connect(self._load_input_audio)
 
         self.payload_picker.file_selected.connect(self._load_payload_file)
