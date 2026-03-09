@@ -49,7 +49,7 @@ class MainWindow(QMainWindow):
                 "has_preview": True,
                 "is_encoding": True,
                 "file_types": ".wav, .flac",
-                "algorithms": []
+                "algorithms": ["LSB"]
             },
             "video_encode": {
                 "title": "Video Encoding",
@@ -93,7 +93,7 @@ class MainWindow(QMainWindow):
                 "has_preview": True,
                 "is_encoding": False,
                 "file_types": ".wav, .flac",
-                "algorithms": []
+                "algorithms": ["LSB"]
             },
             "video_decode": {
                 "title": "Video Decoding",
@@ -554,8 +554,8 @@ class MainWindow(QMainWindow):
             ax.plot(time, data, color='#6d42bd', linewidth=0.5)
         else:
             # Stereo audio
-            ax.plot(time, data[:, 0], color='#6d42bd', linewidth=0.5, label='L')
-            ax.plot(time, data[:, 1], color='#42bd6d', linewidth=0.5, label='R', alpha=0.7)
+            ax.plot(time, data[:, 0], color='#6d42bd', linewidth=0.3, label='L')
+            ax.plot(time, data[:, 1], color='#42bd6d', linewidth=0.3, label='R', alpha=0.7)
             ax.legend(fontsize=7, facecolor='#2d2d2d', labelcolor='#888888', framealpha=0.5)
 
         ax.set_xlabel("Time (s)", fontsize=8, color='#888888')

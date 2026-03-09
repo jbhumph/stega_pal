@@ -127,6 +127,7 @@ class EncodingPanel(QWidget):
         self.encryption_widget = None
         self.password_widget = None
         self.password_text_label = None
+        print(len(self._current_config.settings))
         for setting in self._current_config.settings:
             widget, value_getter, label = WidgetFactory.create_widget(setting)
             self.options_layout.addWidget(label)
