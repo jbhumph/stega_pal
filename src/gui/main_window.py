@@ -467,7 +467,6 @@ class MainWindow(QMainWindow):
 
         # Update file picker visibility
         if section_id == "image_encode":
-            print("Image encode selected")
             self.file_picker.setVisible(True)
             self.file_types_label.setVisible(True)
             self.payload_picker.setVisible(True)
@@ -617,7 +616,7 @@ class MainWindow(QMainWindow):
                 payload = f.read()
 
             encoder = get_encoder(self.section["class"], self.encoding_panel.get_selected_algorithm())
-            result = encoder.encode(f_path, payload, settings, o_path)
+            result = encoder.encode(f_path, payload, settings, o_path, self.section["class"])
             self.display_output(result, "image")
         else:
             decoder = get_decoder(self.section["class"], self.encoding_panel.get_selected_algorithm())

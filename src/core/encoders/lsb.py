@@ -1,9 +1,10 @@
 from PIL import Image
 
 from core.crypto.encrypt import encrypt_message
+import soundfile as sf
 
 class LSBEncoder:
-    def encode(self, file_path, payload, settings, output_path) -> None:
+    def encode(self, file_path, payload, settings, output_path, type) -> None:
         # Implementation of LSB encoding
         bit_planes = settings.get_setting("bit_planes", 1)
         print(f"Bit planes: {bit_planes}")
@@ -32,9 +33,14 @@ class LSBEncoder:
 
         print("Converted to binary")
 
-        # Load image and get pixel access
-        img, pixels = self.load_image(settings, file_path)
-        print("Image loaded")
+        if type == "image":
+            # Load image and get pixel access
+            img, pixels = self.load_image(settings, file_path)
+            print("Image loaded")
+        elif type == "audio":
+            # Load audio and get pixel access
+            data, samplerate = self.load_audio(settings, file_path)
+            print("Audio loaded")
 
         # Encode message in image
         self.encode_message(img, pixels, binary_output, bit_planes, settings)
@@ -94,6 +100,12 @@ class LSBEncoder:
         img = img.convert('RGB')
         pixels = img.load()
         return img, pixels
+    
+    @staticmethod
+    # Load audio and get pixel access
+    def load_audio(config, path: str):
+        data, samplerate = sf.read(path)
+        print(f"Audio data shape: {data.shape}, Sample rate: {samplerate}")
     
     @staticmethod
     # Convert text to binary string
