@@ -2,6 +2,7 @@ from PIL import Image
 
 from core.crypto.encrypt import encrypt_message
 import soundfile as sf
+import numpy as np
 
 class LSBEncoder:
     def encode(self, file_path, payload, settings, output_path, type) -> None:
@@ -37,19 +38,24 @@ class LSBEncoder:
             # Load image and get pixel access
             img, pixels = self.load_image(settings, file_path)
             print("Image loaded")
+            # Encode message in image
+            self.encode_message(img, pixels, binary_output, bit_planes, settings)
+            print("Message encoded")
+            # Save modified image
+            img.save(output_path)
+            print(f"Image saved to {output_path}")
+            return output_path
         elif type == "audio":
-            # Load audio and get pixel access
+            # Load audio and get bit access
             data, samplerate = self.load_audio(settings, file_path)
             print("Audio loaded")
-
-        # Encode message in image
-        self.encode_message(img, pixels, binary_output, bit_planes, settings)
-        print("Message encoded")
-
-        # Save modified image
-        img.save(output_path)
-        print(f"Image saved to {output_path}")
-        return output_path
+            # Encode message in audio
+            self.encode_message_audio(data, binary_output, bit_planes, settings)
+            print("Message encoded")
+            # Save modified audio
+            sf.write(output_path, data, samplerate)
+            print(f"Audio saved to {output_path}")
+            return output_path
 
 
     # Embed the binary message into the image pixels
@@ -92,6 +98,46 @@ class LSBEncoder:
 
                 pixels[x, y] = tuple(channels)
 
+    def encode_message_audio(self, data, binary_output: str, bit_planes: int, settings) -> None:
+        bit_index = 0
+        total_bits = len(binary_output)
+        mask = ~np.int16((1 << bit_planes) - 1)
+
+        mono = data.ndim == 1
+        if mono:
+            data = data.reshape(-1, 1)
+
+        n_samples = data.shape[0]
+        audio_channels = settings.get_setting("audio_channels", ["L", "R"])
+
+        for i in range(n_samples):
+            if bit_index >= total_bits:
+                break
+            for ch in range(data.shape[1]):
+                if bit_index >= total_bits:
+                    break
+
+                if ch == 0 and "L" not in audio_channels:
+                    continue
+                elif ch == 1 and "R" not in audio_channels:
+                    continue
+
+                message_bits = np.int16(0)
+                for plane in range(bit_planes):
+                    if bit_index < total_bits:
+                        bit = int(binary_output[bit_index])
+                        message_bits |= (bit << plane)
+                        bit_index += 1
+                    else:
+                        break
+
+                data[i, ch] = (data[i, ch] & mask) | message_bits
+
+        if mono:
+            data = data.reshape(-1)
+
+        return data
+
 
     @staticmethod
     # Load image and get pixel access
@@ -104,8 +150,8 @@ class LSBEncoder:
     @staticmethod
     # Load audio and get pixel access
     def load_audio(config, path: str):
-        data, samplerate = sf.read(path)
-        print(f"Audio data shape: {data.shape}, Sample rate: {samplerate}")
+        data, samplerate = sf.read(path, dtype='int16')
+        return data, samplerate
     
     @staticmethod
     # Convert text to binary string
