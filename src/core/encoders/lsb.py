@@ -50,7 +50,7 @@ class LSBEncoder:
             data, samplerate = self.load_audio(settings, file_path)
             print("Audio loaded")
             # Encode message in audio
-            self.encode_message_audio(data, binary_output, bit_planes, settings)
+            data = self.encode_message_audio(data, binary_output, bit_planes, settings)
             print("Message encoded")
             # Save modified audio
             sf.write(output_path, data, samplerate)
@@ -98,7 +98,7 @@ class LSBEncoder:
 
                 pixels[x, y] = tuple(channels)
 
-    def encode_message_audio(self, data, binary_output: str, bit_planes: int, settings) -> None:
+    def encode_message_audio(self, data, binary_output: str, bit_planes: int, settings) -> np.ndarray:
         bit_index = 0
         total_bits = len(binary_output)
         mask = ~np.int16((1 << bit_planes) - 1)

@@ -7,6 +7,7 @@ from matplotlib.figure import Figure
 
 import soundfile as sf
 import numpy as np
+import os
 
 from gui.widgets.file_picker import FilePicker
 from gui.widgets.encoding_panel import EncodingPanel
@@ -604,7 +605,9 @@ class MainWindow(QMainWindow):
         # Handle encode/decode action when button clicked
         f_path = self.file_picker.get_file_path()
         p_path = self.payload_picker.get_file_path()
-        o_path = f_path.replace(".png", "_steg.png")
+        ffname, ext = os.path.splitext(f_path)
+        o_path = f"{ffname}_steg{ext}"
+        print(f"Output path: {o_path}")
         settings = Settings()
         settings.update_settings(self.encoding_panel.get_settings())
         print(settings.get_all_settings())
