@@ -623,7 +623,7 @@ class MainWindow(QMainWindow):
             self.display_output(result, "image")
         else:
             decoder = get_decoder(self.section["class"], self.encoding_panel.get_selected_algorithm())
-            result = decoder.decode(f_path, settings)
+            result = decoder.decode(f_path, settings, self.section["class"])
             print(result)
             self.display_output(result, "text")
 
