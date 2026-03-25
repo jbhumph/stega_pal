@@ -2,6 +2,13 @@ from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QL
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+from matplotlib.figure import Figure
+
+import soundfile as sf
+import numpy as np
+import os
+
 from gui.widgets.file_picker import FilePicker
 from gui.widgets.encoding_panel import EncodingPanel
 from core.settings import Settings
@@ -40,10 +47,10 @@ class MainWindow(QMainWindow):
                 "description": "Embed secret data within audio files. Audio steganography exploits "
                                "the limitations of human hearing to hide information in sound files "
                                "without perceptible quality loss.",
-                "has_preview": False,
+                "has_preview": True,
                 "is_encoding": True,
                 "file_types": ".wav, .flac",
-                "algorithms": []
+                "algorithms": ["LSB"]
             },
             "video_encode": {
                 "title": "Video Encoding",
@@ -84,10 +91,10 @@ class MainWindow(QMainWindow):
                 "description": "Retrieve hidden data from audio files that contain steganographic content. "
                                "The decoding process reverses the encoding algorithm to extract the "
                                "original payload.",
-                "has_preview": False,
+                "has_preview": True,
                 "is_encoding": False,
                 "file_types": ".wav, .flac",
-                "algorithms": []
+                "algorithms": ["LSB"]
             },
             "video_decode": {
                 "title": "Video Decoding",
@@ -239,12 +246,25 @@ class MainWindow(QMainWindow):
         self.input_label = QLabel("Input Preview")
         self.input_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.input_label.setStyleSheet("border: none; color: #888888;")
+        
+        #Stacked widget
+        self.input_stack = QStackedWidget()
+        self.input_stack.setStyleSheet("border: none;")
+
+        # Index 0: Image display
         self.input_image = QLabel()
         self.input_image.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.input_image.setStyleSheet("border: none;")
         self.input_image.setText("No image loaded")
+        self.input_stack.addWidget(self.input_image)
+
+        # Index 1: Waveform display
+        self._audio_fig = Figure(facecolor='#1e1e1e')
+        self._audio_canvas = FigureCanvasQTAgg(self._audio_fig)
+        self.input_stack.addWidget(self._audio_canvas)
+
         input_layout.addWidget(self.input_label)
-        input_layout.addWidget(self.input_image, 1)
+        input_layout.addWidget(self.input_stack, 1)
 
         # Output Preview Frame
         self.output_frame = QFrame()
@@ -269,6 +289,11 @@ class MainWindow(QMainWindow):
         self.output_text.setReadOnly(True)
         self.output_text.setStyleSheet("background-color: transparent; color: #e0e0e0; border: none;")
         self.output_stack.addWidget(self.output_text)
+
+        # Audio display (index 2)
+        self._audio_fig_out = Figure(facecolor='#1e1e1e')
+        self._audio_canvas_out = FigureCanvasQTAgg(self._audio_fig_out)
+        self.output_stack.addWidget(self._audio_canvas_out)
 
         output_layout.addWidget(self.output_label)
         output_layout.addWidget(self.output_stack, 1)
@@ -421,6 +446,11 @@ class MainWindow(QMainWindow):
         # Show hide preview frames
         self.preview_container.setVisible(self.section["has_preview"])
 
+        if self.current_section in ["audio_encode", "audio_decode"]:
+            self.input_stack.setCurrentIndex(1)
+        else:
+            self.input_stack.setCurrentIndex(0)
+
         # Update output label for preview windows
         if self.section["has_preview"]:
             if self.section["is_encoding"]:
@@ -443,13 +473,24 @@ class MainWindow(QMainWindow):
 
         # Update file picker visibility
         if section_id == "image_encode":
-            print("Image encode selected")
             self.file_picker.setVisible(True)
             self.file_types_label.setVisible(True)
             self.payload_picker.setVisible(True)
             self.payload_types_label.setVisible(True)
             self.capacity_label.setVisible(True)
         elif section_id == "image_decode":
+            self.file_picker.setVisible(True)
+            self.file_types_label.setVisible(True)
+            self.payload_picker.setVisible(False)
+            self.payload_types_label.setVisible(False)
+            self.capacity_label.setVisible(False)
+        elif section_id == "audio_encode":
+            self.file_picker.setVisible(True)
+            self.file_types_label.setVisible(True)
+            self.payload_picker.setVisible(True)
+            self.payload_types_label.setVisible(True)
+            self.capacity_label.setVisible(False)
+        elif section_id == "audio_decode":
             self.file_picker.setVisible(True)
             self.file_types_label.setVisible(True)
             self.payload_picker.setVisible(False)
@@ -474,6 +515,8 @@ class MainWindow(QMainWindow):
         # Listen for file picker
         if self.current_section == "image_encode":
             self.file_picker.file_selected.connect(self._load_input_image)
+        if self.current_section == "audio_encode" or self.current_section == "audio_decode":
+            self.file_picker.file_selected.connect(self._load_input_audio)
 
         self.payload_picker.file_selected.connect(self._load_payload_file)
 
@@ -486,6 +529,48 @@ class MainWindow(QMainWindow):
             self._calculate_capacity()
         else:
             self.input_image.setText("Failed to load image")
+
+
+    def _load_input_audio(self, file_path):
+        # Load audio file for encoding
+        try: 
+            data, sample_rate = sf.read(file_path)
+        except Exception as e:
+            self.input_label.setText(f"Error loading audio file: {e}")
+            return
+        
+        n_samples = len(data)
+        duration = n_samples / sample_rate
+        time = np.linspace(0, duration, n_samples)
+
+        self._audio_fig.clear()
+        ax = self._audio_fig.add_subplot(111)
+
+        ax.set_facecolor('#252525')
+        ax.tick_params(colors='#888888', labelsize=8)
+        ax.xaxis.label.set_color('#888888')
+        ax.yaxis.label.set_color('#888888')
+        for spine in ax.spines.values():
+            spine.set_edgecolor('#404040')
+        self._audio_fig.subplots_adjust(left=0.1, right=0.98, top=0.92, bottom=0.2)
+
+        if data.ndim == 1:
+            # Mono audio
+            ax.plot(time, data, color='#6d42bd', linewidth=0.5)
+        else:
+            # Stereo audio
+            ax.plot(time, data[:, 0], color='#6d42bd', linewidth=0.3, label='L')
+            ax.plot(time, data[:, 1], color='#42bd6d', linewidth=0.3, label='R', alpha=0.7)
+            ax.legend(fontsize=7, facecolor='#2d2d2d', labelcolor='#888888', framealpha=0.5)
+
+        ax.set_xlabel("Time (s)", fontsize=8, color='#888888')
+        ax.set_ylabel("Amplitude", fontsize=8, color='#888888')
+        ax.set_title(file_path.split("/")[-1], fontsize=9, color='#e0e0e0', pad=6)
+        ax.set_xlim(0, duration)
+
+        self._audio_canvas.draw()
+        self.input_stack.setCurrentIndex(1)
+
 
     def _load_payload_file(self, file_path):
         # Load payload file (for encoding)
@@ -525,7 +610,9 @@ class MainWindow(QMainWindow):
         # Handle encode/decode action when button clicked
         f_path = self.file_picker.get_file_path()
         p_path = self.payload_picker.get_file_path()
-        o_path = f_path.replace(".png", "_steg.png")
+        ffname, ext = os.path.splitext(f_path)
+        o_path = f"{ffname}_steg{ext}"
+        print(f"Output path: {o_path}")
         settings = Settings()
         settings.update_settings(self.encoding_panel.get_settings())
         print(settings.get_all_settings())
@@ -537,11 +624,14 @@ class MainWindow(QMainWindow):
                 payload = f.read()
 
             encoder = get_encoder(self.section["class"], self.encoding_panel.get_selected_algorithm())
-            result = encoder.encode(f_path, payload, settings, o_path)
-            self.display_output(result, "image")
+            result = encoder.encode(f_path, payload, settings, o_path, self.section["class"])
+            if self.section["class"] == "audio":
+                self._display_output_audio(result)
+            elif self.section["class"] == "image":
+                self.display_output(result, "image")
         else:
             decoder = get_decoder(self.section["class"], self.encoding_panel.get_selected_algorithm())
-            result = decoder.decode(f_path, settings)
+            result = decoder.decode(f_path, settings, self.section["class"])
             print(result)
             self.display_output(result, "text")
 
@@ -561,6 +651,36 @@ class MainWindow(QMainWindow):
         else:
             self.output_text.setText(result)
             self.output_stack.setCurrentIndex(1)  # Switch to text view
+
+    def _display_output_audio(self, file_path):
+        data, sample_rate = sf.read(file_path)
+        n_samples = len(data)
+        time = np.linspace(0, n_samples / sample_rate, n_samples)
+
+        self._audio_fig_out.clear()
+        ax = self._audio_fig_out.add_subplot(111)
+
+        ax.set_facecolor('#252525')
+        ax.tick_params(colors='#888888', labelsize=8)
+        ax.xaxis.label.set_color('#888888')
+        ax.yaxis.label.set_color('#888888')
+        for spine in ax.spines.values():
+            spine.set_edgecolor('#404040')
+        self._audio_fig_out.subplots_adjust(left=0.1, right=0.98, top=0.92, bottom=0.2)
+
+        if data.ndim == 1:
+            ax.plot(time, data, color='#6d42bd', linewidth=0.5)
+        else:
+            ax.plot(time, data[:, 0], color='#42bd6d', linewidth=0.3, label='L')
+            ax.plot(time, data[:, 1], color='#6d42bd', linewidth=0.3, label='R', alpha=0.7)
+            ax.legend(fontsize=7, facecolor='#2d2d2d', labelcolor='#888888', framealpha=0.5)
+
+        ax.set_xlabel("Time (s)", fontsize=8, color='#888888')
+        ax.set_ylabel("Amplitude", fontsize=8, color='#888888')
+        ax.set_title(file_path.split("/")[-1], fontsize=9, color='#e0e0e0', pad=6)
+
+        self._audio_canvas_out.draw()
+        self.output_stack.setCurrentIndex(2)
 
 
     def _calculate_capacity(self):

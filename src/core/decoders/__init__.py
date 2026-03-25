@@ -2,6 +2,7 @@ from .lsb import LSBDecoder
 
 DECODERS = {
     ("image", "LSB"): LSBDecoder,
+    ("audio", "LSB"): LSBDecoder,
 }   
 
 def get_decoder(media_type: str, algorithm: str):

@@ -126,9 +126,107 @@ LSB_IMAGE_DECODE = AlgorithmConfig(
     ],
 )
 
+LSB_AUDIO_ENCODE = AlgorithmConfig(
+    name="LSB",
+    display_name="Least Significant Bit",
+    media_type="audio",
+    settings=[
+        SettingDef(
+            key="delimiter",
+            label="Delimiter",
+            widget_type=WidgetType.COMBOBOX,
+            default="NULL",
+            options=["NULL Terminator", "Magic Sequence", "None"],
+            tooltip="Type of delimiter to use for the payload."
+        ),
+        SettingDef(
+            key="bit_planes",
+            label="Bit Planes",
+            widget_type=WidgetType.SPINBOX,
+            default=1,
+            min_value=1,
+            max_value=4,
+            tooltip="Number of least significant bit planes to read for decoding."
+        ),
+        SettingDef(
+            key="audio_channels",
+            label="Audio Channels",
+            widget_type=WidgetType.MULTI_CHECKBOX,
+            default=["L", "R"],
+            options=["L", "R"],
+            tooltip="Audio channels to read for encoding."
+        ),
+        SettingDef(
+            key="encryption",
+            label="Encryption",
+            widget_type=WidgetType.COMBOBOX,
+            default="None",
+            options=["None", "AES"],
+            tooltip="Encrypt the payload before encoding."
+        ),
+        SettingDef(
+            key="password",
+            label="Password",
+            widget_type=WidgetType.TEXTBOX,
+            default="",
+            tooltip="Password for encryption (if applicable)."
+        ),
+    ]
+)
+
+LSB_AUDIO_DECODE = AlgorithmConfig(
+    name="LSB",
+    display_name="Least Significant Bit",
+    media_type="audio",
+    settings=[
+        SettingDef(
+            key="delimiter",
+            label="Delimiter",
+            widget_type=WidgetType.COMBOBOX,
+            default="NULL",
+            options=["NULL Terminator", "Magic Sequence", "None"],
+            tooltip="Type of delimiter to use for the payload."
+        ),
+        SettingDef(
+            key="bit_planes",
+            label="Bit Planes",
+            widget_type=WidgetType.SPINBOX,
+            default=1,
+            min_value=1,
+            max_value=4,
+            tooltip="Number of least significant bit planes to read for decoding."
+        ),
+        SettingDef(
+            key="audio_channels",
+            label="Audio Channels",
+            widget_type=WidgetType.MULTI_CHECKBOX,
+            default=["L", "R"],
+            options=["L", "R"],
+            tooltip="Audio channels to read for encoding."
+        ),
+        SettingDef(
+            key="encryption",
+            label="Encryption",
+            widget_type=WidgetType.COMBOBOX,
+            default="None",
+            options=["None", "AES"],
+            tooltip="Encrypt the payload before encoding."
+        ),
+        SettingDef(
+            key="password",
+            label="Password",
+            widget_type=WidgetType.TEXTBOX,
+            default="",
+            tooltip="Password for encryption (if applicable)."
+        ),
+    ]
+)
+
 ALGORITHM_REGISTRY = {
     ("image_encode", "LSB"): LSB_IMAGE_ENCODE,
     ("image_decode", "LSB"): LSB_IMAGE_DECODE,
+    ("audio_encode", "LSB"): LSB_AUDIO_ENCODE,
+    ("audio_decode", "LSB"): LSB_AUDIO_DECODE,
 }
 
 def get_algorithm_config(section_id: str, algorithm_name: str) -> AlgorithmConfig:

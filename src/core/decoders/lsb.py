@@ -1,20 +1,36 @@
 from PIL import Image
 
 from core.crypto.encrypt import decrypt_message
+import soundfile as sf
+import numpy as np
 
 class LSBDecoder:
-    def decode(self, file_path, settings) -> str:
-        # Implementation of LSB decoding
+    def decode(self, file_path, settings, type) -> str:
+        if type == "image":
+            # Load image and get pixel access
+            img, pixels = self.load_image(settings, file_path)
+            print("Image loaded")
+            # Decode message from image
+            message = self.decode_image(img, pixels, settings)
+            print("Message decoded")
+            return message
+        elif type == "audio":
+            # Load audio and get bit access
+            data, samplerate = self.load_audio(settings, file_path)
+            print("Audio loaded")
+            # Decode message from audio
+            message = self.decode_audio(data, samplerate, settings)
+            print("Message decoded")
+            return message
+
+
+    def decode_image(self, img: Image, pixels, settings) -> str:
+        # Implementation of LSB decoding for images
         bit_planes = settings.get_setting("bit_planes", 1)
         print(f"Bit planes: {bit_planes}")
         
-        # Load image and get pixel access
-        img, pixels = self.load_image(settings, file_path)
-        print("Image loaded")
-
         # Declare delimiter type
-        delimiter_type = settings.get_setting('delimiter', 'NULL')
-        print(delimiter_type)
+        delimiter_type = settings.get_setting('delimiter', 'NULL')  
         magic_seq = "1111111100000000"
         print(f"Delimiter type: {delimiter_type}")
         print(f"Magic sequence: {magic_seq}")
@@ -73,12 +89,70 @@ class LSBDecoder:
                 print(f"Decryption failed: {e}")
                 return ""
 
-
         # Return decoded message
         return message
     
+    def decode_audio(self, data, samplerate, settings) -> str:
+        # Implementation of LSB decoding for audio
+        bit_planes = settings.get_setting("bit_planes", 1)
+        print(f"Bit planes: {bit_planes}")
+        
+        # Declare delimiter type
+        delimiter_type = settings.get_setting('delimiter', 'NULL')  
+        magic_seq = "1111111100000000"
+        print(f"Delimiter type: {delimiter_type}")
+        print(f"Magic sequence: {magic_seq}")
 
-    def load_image(self, settings, file_path):
+        audio_channels = settings.get_setting("audio_channels", ["L", "R"])
+
+        # Extract bits
+        extracted_bits = []
+        for i in range(data.shape[0]):
+            for ch in range(data.shape[1]):
+                if ch == 0 and "L" not in audio_channels:
+                    continue
+                if ch == 1 and "R" not in audio_channels:
+                    continue
+
+                for plane in range(bit_planes):
+                    bit = (data[i, ch] >> plane) & 1
+                    extracted_bits.append(str(bit))
+
+        binary_str = ''.join(extracted_bits)
+
+        # Convert bits to characters — identical to decode_image
+        message = ""
+        for i in range(0, len(binary_str), 8):
+            byte = binary_str[i:i+8]
+            if len(byte) != 8:
+                break
+            code = int(byte, 2)
+            if magic_seq in message and delimiter_type == "Magic Sequence":
+                message = message[:-len(magic_seq)]
+                break
+            elif code == 0 and delimiter_type == "NULL Terminator":
+                break
+            message += chr(code)
+
+        # Decrypt if enabled — identical to decode_image
+        if settings.get_setting("encryption") and settings.get_setting("encryption") != "None":
+            try:
+                message = decrypt_message(message.encode(), settings.get_setting("password", ""))
+            except ValueError as e:
+                print(f"Decryption failed: {e}")
+                return ""
+
+        return message
+
+
+
+    @staticmethod
+    def load_image(settings, file_path):
         img = Image.open(file_path)
         pixels = img.load()
         return img, pixels
+    
+    @staticmethod
+    def load_audio(settings, path):
+        data, samplerate = sf.read(path, dtype='int16')
+        return data, samplerate
