@@ -671,8 +671,8 @@ class MainWindow(QMainWindow):
         if data.ndim == 1:
             ax.plot(time, data, color='#6d42bd', linewidth=0.5)
         else:
-            ax.plot(time, data[:, 0], color='#6d42bd', linewidth=0.3, label='L')
-            ax.plot(time, data[:, 1], color='#42bd6d', linewidth=0.3, label='R', alpha=0.7)
+            ax.plot(time, data[:, 0], color='#42bd6d', linewidth=0.3, label='L')
+            ax.plot(time, data[:, 1], color='#6d42bd', linewidth=0.3, label='R', alpha=0.7)
             ax.legend(fontsize=7, facecolor='#2d2d2d', labelcolor='#888888', framealpha=0.5)
 
         ax.set_xlabel("Time (s)", fontsize=8, color='#888888')
@@ -681,7 +681,6 @@ class MainWindow(QMainWindow):
 
         self._audio_canvas_out.draw()
         self.output_stack.setCurrentIndex(2)
-
 
 
     def _calculate_capacity(self):
