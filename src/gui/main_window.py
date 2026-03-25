@@ -290,6 +290,11 @@ class MainWindow(QMainWindow):
         self.output_text.setStyleSheet("background-color: transparent; color: #e0e0e0; border: none;")
         self.output_stack.addWidget(self.output_text)
 
+        # Audio display (index 2)
+        self._audio_fig_out = Figure(facecolor='#1e1e1e')
+        self._audio_canvas_out = FigureCanvasQTAgg(self._audio_fig_out)
+        self.output_stack.addWidget(self._audio_canvas_out)
+
         output_layout.addWidget(self.output_label)
         output_layout.addWidget(self.output_stack, 1)
 
@@ -510,7 +515,7 @@ class MainWindow(QMainWindow):
         # Listen for file picker
         if self.current_section == "image_encode":
             self.file_picker.file_selected.connect(self._load_input_image)
-        if self.current_section == "audio_encode":
+        if self.current_section == "audio_encode" or self.current_section == "audio_decode":
             self.file_picker.file_selected.connect(self._load_input_audio)
 
         self.payload_picker.file_selected.connect(self._load_payload_file)
@@ -620,7 +625,10 @@ class MainWindow(QMainWindow):
 
             encoder = get_encoder(self.section["class"], self.encoding_panel.get_selected_algorithm())
             result = encoder.encode(f_path, payload, settings, o_path, self.section["class"])
-            self.display_output(result, "image")
+            if self.section["class"] == "audio":
+                self._display_output_audio(result)
+            elif self.section["class"] == "image":
+                self.display_output(result, "image")
         else:
             decoder = get_decoder(self.section["class"], self.encoding_panel.get_selected_algorithm())
             result = decoder.decode(f_path, settings, self.section["class"])
@@ -643,6 +651,37 @@ class MainWindow(QMainWindow):
         else:
             self.output_text.setText(result)
             self.output_stack.setCurrentIndex(1)  # Switch to text view
+
+    def _display_output_audio(self, file_path):
+        data, sample_rate = sf.read(file_path)
+        n_samples = len(data)
+        time = np.linspace(0, n_samples / sample_rate, n_samples)
+
+        self._audio_fig_out.clear()
+        ax = self._audio_fig_out.add_subplot(111)
+
+        ax.set_facecolor('#252525')
+        ax.tick_params(colors='#888888', labelsize=8)
+        ax.xaxis.label.set_color('#888888')
+        ax.yaxis.label.set_color('#888888')
+        for spine in ax.spines.values():
+            spine.set_edgecolor('#404040')
+        self._audio_fig_out.subplots_adjust(left=0.1, right=0.98, top=0.92, bottom=0.2)
+
+        if data.ndim == 1:
+            ax.plot(time, data, color='#6d42bd', linewidth=0.5)
+        else:
+            ax.plot(time, data[:, 0], color='#6d42bd', linewidth=0.3, label='L')
+            ax.plot(time, data[:, 1], color='#42bd6d', linewidth=0.3, label='R', alpha=0.7)
+            ax.legend(fontsize=7, facecolor='#2d2d2d', labelcolor='#888888', framealpha=0.5)
+
+        ax.set_xlabel("Time (s)", fontsize=8, color='#888888')
+        ax.set_ylabel("Amplitude", fontsize=8, color='#888888')
+        ax.set_title(file_path.split("/")[-1], fontsize=9, color='#e0e0e0', pad=6)
+
+        self._audio_canvas_out.draw()
+        self.output_stack.setCurrentIndex(2)
+
 
 
     def _calculate_capacity(self):
